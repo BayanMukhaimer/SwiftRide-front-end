@@ -2,22 +2,25 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import axios from "axios";
 
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import axios from "axios";
-import "./AuthForm.css";
-
 function SignUp() {
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [role, setRole] = useState("");
+  const [ vehicle, setVehicle] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
       await axios.post("http://localhost:3000/api/auth/register", {
-        username,
+        name,
+        email,
         password,
+        phone,
+        role,
+        vehicle
       });
       alert("User registered, please login");
       navigate("/login");
@@ -31,9 +34,15 @@ function SignUp() {
       <form className="auth-form" onSubmit={handleSubmit}>
         <h2>Sign Up</h2>
         <input
-          placeholder="Username"
-          value={username}
-          onChange={(event) => setUsername(event.target.value)}
+          placeholder="name"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+        />
+        <input
+            placeholder="email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
         />
         <input
           placeholder="Password"
@@ -41,6 +50,29 @@ function SignUp() {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
+        <input
+          placeholder="phone"
+          value={phone}
+          onChange={(event) => setPhone(event.target.value)}
+        />
+        <select
+          value={role}
+          onChange={(event) => setRole(event.target.value)}
+          required
+        >
+            <option value="">Select role</option>
+            <option value="rider">Rider</option>
+            <option value="driver">Driver</option>
+        </select>
+        {role === "driver" ? (
+        <input
+          placeholder="vehicle"
+          value={vehicle}
+          onChange={(event) => setVehicle(event.target.value)}
+          required
+        />
+        ) : null}
+
         <button type="submit">Sign Up</button>
       </form>
     </div>
