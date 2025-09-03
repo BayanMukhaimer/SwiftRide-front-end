@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router";
 
 import Homepage from "./components/Homepage/Homepage"
 import RideForm from "./components/RideForm/RideForm";
+import HistoryRideList from "./components/HistoryRideList/HistoryRideList"
 const App = () => {
   const [formIsShown, setFormIsShown] = useState(false);
   return (
@@ -18,6 +19,14 @@ const App = () => {
           element={
           <RideForm
             setFormIsShown={setFormIsShown}
+          />
+          }
+        />
+        <Route
+          path="/rides/myrides"
+          element={
+          <HistoryRideList
+          
           />
           }
         />
