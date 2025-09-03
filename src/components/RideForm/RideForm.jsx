@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {createRide} from "../../../lib/api";
 import { useNavigate } from "react-router";
 
@@ -14,7 +14,7 @@ const RideForm = ({setFormIsShown}) => {
 
 
     const setField = (section, key, value) =>
-    setFormData(form => ({ ...form, [section]: { ...form[section], [key]: value } }));
+    setFormData(formData => ({ ...formData, [section]: { ...formData[section], [key]: value } }));
 
     const handleSubmit = async (event) => {
     event.preventDefault();
@@ -25,22 +25,22 @@ const RideForm = ({setFormIsShown}) => {
 
     const submitData = {
     pickup: {
-        address: form.pickup.address,
-        lat: Number(form.pickup.lat),
-        lng: Number(form.pickup.lng),
+        address: formData.pickup.address,
+        lat: Number(formData.pickup.lat),
+        lng: Number(formData.pickup.lng),
     },
     dropoff: {
-        address: form.dropoff.address,
-        lat: Number(form.dropoff.lat),
-        lng: Number(form.dropoff.lng),
+        address: formData.dropoff.address,
+        lat: Number(formData.dropoff.lat),
+        lng: Number(formData.dropoff.lng),
     },
-    fare: form.fare ? Number(form.fare) : 0
+    fare: formData.fare ? Number(formData.fare) : 0
     };
 
     await createRide(submitData);
     setFormIsShown(false);
     setIsSubmitting(false);
-    navigate("/myrides");
+    navigate("/rides/myrides");
     }  
 
     return(
