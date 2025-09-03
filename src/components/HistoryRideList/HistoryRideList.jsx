@@ -17,7 +17,7 @@ const HistoryRideList = () => {
     useEffect(() => {
         (async () => {
             try {
-            const res = await getAllRide();
+            const res = await fetchRides();
             setRides(res.data || []);
             } catch (event) {
             console.error(event);
