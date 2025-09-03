@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { BrowserRouter as Router, Routes, Route, Link  } from "react-router";
 
 import Homepage from "./components/Homepage/Homepage"
+import RegisterForm from "./components/RegisterForm/RegisterForm"
 import RideForm from "./components/RideForm/RideForm";
 import HistoryRideList from "./components/HistoryRideList/HistoryRideList"
 const App = () => {
@@ -11,9 +12,14 @@ const App = () => {
 
     <Router>
 
-    
+      <nav>
+        {/* <Link to="/">Home</Link> */}
+        <Link to="/signup">Sign Up</Link>
+        <Link to="/rides/request">Request Ride</Link>
+        <Link to="/rides/myrides">My Rides</Link>
+      </nav>
       <Routes>
-       
+       <Route path="/signup" element={<RegisterForm/>}/>
         <Route
           path="/rides/request"
           element={

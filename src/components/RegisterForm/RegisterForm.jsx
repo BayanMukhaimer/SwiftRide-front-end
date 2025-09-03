@@ -9,12 +9,13 @@ function SignUp() {
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("");
   const [ vehicle, setVehicle] = useState("");
+  
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      await axios.post("http://localhost:3000/api/auth/register", {
+      await axios.post("http://localhost:3000/api/users/register", {
         name,
         email,
         password,
