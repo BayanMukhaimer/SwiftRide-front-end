@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {createRide} from "../../../lib/api";
 import { useNavigate } from "react-router";
 

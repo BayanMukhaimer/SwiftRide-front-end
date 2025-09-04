@@ -2,11 +2,15 @@ import { jwtDecode } from "jwt-decode";
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link  } from "react-router";
 
+
 import Homepage from "./components/Homepage/Homepage"
 import RegisterForm from "./components/RegisterForm/RegisterForm"
 import LoginForm from "./components/LoginForm/LoginForm";
 import RideForm from "./components/RideForm/RideForm";
 import HistoryRideList from "./components/HistoryRideList/HistoryRideList"
+import RideRequest from "./components/RideRequest/RideRequest";
+
+
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [formIsShown, setFormIsShown] = useState(false);
@@ -21,6 +25,7 @@ const App = () => {
   }
 
   return (
+
   <div>
 
     <Router>
@@ -32,7 +37,9 @@ const App = () => {
         <Link to="/rides/request">Request Ride</Link>
         <Link to="/rides/myrides">My Rides</Link>
       </nav>
+      
       <Routes>
+      <Route path="/" element={<Homepage />} />
       <Route path="/signup" element={<RegisterForm/>}/>
       <Route path="/login" element={<LoginForm onLogin={handleLogin}/>}/>
       
@@ -45,6 +52,12 @@ const App = () => {
           }
         />
         <Route
+            path="/ride-request"
+            element={
+             <RideRequest
+              />}
+          />
+        <Route
           path="/rides/myrides"
           element={
           <HistoryRideList
@@ -56,6 +69,7 @@ const App = () => {
       </Routes>
     </Router>
   </div>
+
 
 
   )
