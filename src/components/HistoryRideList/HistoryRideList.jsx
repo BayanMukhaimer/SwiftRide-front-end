@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { ClipLoader } from "react-spinners";
 
 import { getAllRide as fetchRides } from "../../../lib/api";
+import RideCancelButton  from "./RideCancelButton"
 
 const HistoryRideList = () => {
     const [ rides, setRides ] = useState([]);
@@ -10,18 +11,13 @@ const HistoryRideList = () => {
     const navigate = useNavigate(); 
 
     const getAllRide = async () => {
-        const response = await getAllRide();
-        setRides(response.data);
+        const response = await fetchRides();
+        setRides(response.data || []);
     };
 
     useEffect(() => {
         (async () => {
-            try {
-            const res = await fetchRides();
-            setRides(res.data || []);
-            } catch (event) {
-            console.error(event);
-            }
+            await getAllRide()
             setLoading(false);
         })();
     }, []);
@@ -39,13 +35,13 @@ const HistoryRideList = () => {
                             <p><strong>fare:</strong> {ride.fare ?? 0}</p>
                             <p><strong>Pickup:</strong> {ride.pickup.address} </p>
                             <p><strong>Dropoff:</strong> {ride.dropoff.address} </p>   
-                            {/* <div>
-                            <button className="btn" onClick={() => handleEditClick(booking)}>Update</button>
-                            <BookingDeleteButton
-                                BookingId={booking._id}
-                                getAllBooking={getAllBooking}
+                            <div>
+                            {/* <button className="btn" onClick={() => handleEditClick(booking)}>Update</button> */}
+                            <RideCancelButton
+                                rideId={ride._id}
+                                getAllRide={getAllRide}
                             />
-                            </div> */}
+                            </div>
                         </li>
                     ))}
             </ol>

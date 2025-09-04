@@ -4,7 +4,7 @@ import axios from 'axios'
 
 
 function LoginForm({ onLogin }) {
-  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
 
@@ -12,12 +12,12 @@ function LoginForm({ onLogin }) {
     event.preventDefault()
     try {
       const res = await axios.post('http://localhost:3000/api/users/login', {
-        name,
+        email,
         password
       })
       localStorage.setItem('token', res.data.token)
       onLogin(res.data.token)
-      navigate('/booking')
+      navigate('/rides/request')
     } catch (err) {
       alert(err.response?.data?.message || 'Login failed')
     }
@@ -28,9 +28,9 @@ function LoginForm({ onLogin }) {
     <form  className="auth-form" onSubmit={handleSubmit}>
       <h2>Login</h2>
       <input 
-        placeholder="name"
-        value={name}
-        onChange={event => setName(event.target.value)}
+        placeholder="email"
+        value={email}
+        onChange={event => setEmail(event.target.value)}
       />
       <input 
         placeholder="Password"
