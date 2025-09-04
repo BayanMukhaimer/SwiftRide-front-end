@@ -1,53 +1,65 @@
 import { useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMapEvents,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
-import { createRide } from "../../../lib/api"; 
+import { createRide } from "../../lib/api";
 
 const RideRequest = () => {
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
   const [pickupPos, setPickupPos] = useState(null);
   const [dropoffPos, setDropoffPos] = useState(null);
-  const [pickupSuggestions, setPickupSuggestions] = useState([]);
-  const [dropoffSuggestions, setDropoffSuggestions] = useState([]);
 
   const provider = new OpenStreetMapProvider();
 
-  const searchLocation = async (query, type) => {
-    if (!query) return;
-    const results = await provider.search({ query, countrycodes: ["BH"] });
-    if (type === "pickup") setPickupSuggestions(results);
-    else setDropoffSuggestions(results);
-  };
+  // handle map clicks
+  const LocationSelector = () => {
+    useMapEvents({
+      click: async (e) => {
+        const { lat, lng } = e.latlng;
+        const results = await provider.search({ query: `${lat},${lng}` });
 
-  const selectSuggestion = (place, type) => {
-    const coords = [place.y, place.x];
-    if (type === "pickup") {
-      setPickup(place.label);
-      setPickupPos(coords);
-      setPickupSuggestions([]);
-    } else {
-      setDropoff(place.label);
-      setDropoffPos(coords);
-      setDropoffSuggestions([]);
-    }
+        if (!pickupPos) {
+          // set pickup first
+          setPickupPos([lat, lng]);
+          setPickup(results[0]?.label || `${lat},${lng}`);
+        } else if (!dropoffPos) {
+          // set dropoff second
+          setDropoffPos([lat, lng]);
+          setDropoff(results[0]?.label || `${lat},${lng}`);
+        } else {
+          alert("Pickup and dropoff are already selected. Reset to choose again.");
+        }
+      },
+    });
+    return null;
   };
 
   const handleRequestRide = async () => {
     if (!pickupPos || !dropoffPos) {
-      alert("Please select both pickup and dropoff locations from suggestions.");
+      alert("Please select both pickup and dropoff locations.");
       return;
     }
-
     const token = localStorage.getItem("token");
     const data = {
-      pickup: { address: pickup, location: { lat: pickupPos[0], lng: pickupPos[1] } },
-      dropoff: { address: dropoff, location: { lat: dropoffPos[0], lng: dropoffPos[1] } },
+      pickup: {
+        address: pickup,
+        location: { lat: pickupPos[0], lng: pickupPos[1] },
+      },
+      dropoff: {
+        address: dropoff,
+        location: { lat: dropoffPos[0], lng: dropoffPos[1] },
+      },
     };
 
     try {
-      const res = await createRide({ ...data, token }); // send token inside headers in api.js
+      const res = await createRide(data, token);
       alert("Ride requested successfully!");
       console.log("Ride response:", res.data);
     } catch (err) {
@@ -56,80 +68,61 @@ const RideRequest = () => {
     }
   };
 
+  const resetPoints = () => {
+    setPickup("");
+    setDropoff("");
+    setPickupPos(null);
+    setDropoffPos(null);
+  };
+
   return (
     <div>
       <h2>Request a Ride</h2>
 
-      {/* Pickup Input */}
-      <div style={{ position: "relative" }}>
-        <input
-          type="text"
-          placeholder="Pickup Location"
-          value={pickup}
-          onChange={(e) => {
-            setPickup(e.target.value);
-            searchLocation(e.target.value, "pickup");
-          }}
-        />
-        {pickupSuggestions.length > 0 && (
-          <ul style={{ position: "absolute", background: "white", zIndex: 1000, width: "100%" }}>
-            {pickupSuggestions.map((p) => (
-              <li
-                key={p.label}
-                onClick={() => selectSuggestion(p, "pickup")}
-                style={{ cursor: "pointer", padding: "5px" }}
-              >
-                {p.label}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <input
+        type="text"
+        placeholder="Pickup Location"
+        value={pickup}
+        readOnly
+        style={{ marginBottom: "10px", width: "100%", padding: "6px" }}
+      />
+      <input
+        type="text"
+        placeholder="Dropoff Location"
+        value={dropoff}
+        readOnly
+        style={{ marginBottom: "10px", width: "100%", padding: "6px" }}
+      />
 
-      {/* Dropoff Input */}
-      <div style={{ position: "relative", marginTop: "10px" }}>
-        <input
-          type="text"
-          placeholder="Dropoff Location"
-          value={dropoff}
-          onChange={(e) => {
-            setDropoff(e.target.value);
-            searchLocation(e.target.value, "dropoff");
-          }}
-        />
-        {dropoffSuggestions.length > 0 && (
-          <ul style={{ position: "absolute", background: "white", zIndex: 1000, width: "100%" }}>
-            {dropoffSuggestions.map((p) => (
-              <li
-                key={p.label}
-                onClick={() => selectSuggestion(p, "dropoff")}
-                style={{ cursor: "pointer", padding: "5px" }}
-              >
-                {p.label}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* Request Button */}
       <button
         onClick={handleRequestRide}
-        style={{ marginTop: "10px", padding: "8px 16px", cursor: "pointer" }}
+        style={{ marginRight: "10px", padding: "8px 16px", cursor: "pointer" }}
       >
         Request Ride
+      </button>
+      <button onClick={resetPoints} style={{ padding: "8px 16px", cursor: "pointer" }}>
+        Reset
       </button>
 
       {/* Map */}
       <MapContainer
-        center={[26.0667, 50.5577]} // Bahrain
+        center={[26.0667, 50.5577]} // Bahrain center
         zoom={12}
         style={{ height: "400px", width: "100%", marginTop: "20px" }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <LocationSelector />
 
-        {pickupPos && <Marker position={pickupPos}><Popup>Pickup</Popup></Marker>}
-        {dropoffPos && <Marker position={dropoffPos}><Popup>Dropoff</Popup></Marker>}
+        {pickupPos && (
+          <Marker position={pickupPos}>
+            <Popup>Pickup</Popup>
+          </Marker>
+        )}
+        {dropoffPos && (
+          <Marker position={dropoffPos}>
+            <Popup>Dropoff</Popup>
+          </Marker>
+        )}
       </MapContainer>
     </div>
   );
