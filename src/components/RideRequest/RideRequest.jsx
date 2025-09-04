@@ -8,7 +8,7 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
-import { createRide } from "../../lib/api";
+import { createRide } from "../../../lib/api";
 
 const RideRequest = () => {
   const [pickup, setPickup] = useState("");
