@@ -43,7 +43,6 @@ const HistoryRideList = () => {
                             <RideCancelButton
                                 rideId={ride._id}
                                 getAllRide={getAllRide}
-                                
                             />
                             :
                             null
