@@ -37,10 +37,17 @@ const HistoryRideList = () => {
                             <p><strong>Dropoff:</strong> {ride.dropoff.address} </p>   
                             <div>
                             {/* <button className="btn" onClick={() => handleEditClick(booking)}>Update</button> */}
+
+                            {ride.status === "requested" 
+                            ?
                             <RideCancelButton
                                 rideId={ride._id}
                                 getAllRide={getAllRide}
+                                
                             />
+                            :
+                            null
+                            }
                             </div>
                         </li>
                     ))}

@@ -9,7 +9,7 @@ const RideCancelButton = ({ rideId, getAllRide }) => {
     }
 
     return (
-    <button className="btn-delete" onClick={handleDelete}>Cancel Ride</button>
+    <button className="btn-delete" onClick={handleDelete} >Cancel Ride</button>
   )
 }
 
