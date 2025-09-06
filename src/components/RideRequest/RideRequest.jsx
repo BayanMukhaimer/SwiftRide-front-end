@@ -4,6 +4,7 @@ import {
   TileLayer,
   Marker,
   Popup,
+  Polyline,
   useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -15,6 +16,8 @@ const RideRequest = () => {
   const [dropoff, setDropoff] = useState("");
   const [pickupPos, setPickupPos] = useState(null);
   const [dropoffPos, setDropoffPos] = useState(null);
+  const [route, setRoute] = useState(null);
+  const [travelInfo, setTravelInfo] = useState(null);
 
   const provider = new OpenStreetMapProvider();
 
@@ -26,19 +29,41 @@ const RideRequest = () => {
         const results = await provider.search({ query: `${lat},${lng}` });
 
         if (!pickupPos) {
-          // set pickup first
           setPickupPos([lat, lng]);
           setPickup(results[0]?.label || `${lat},${lng}`);
         } else if (!dropoffPos) {
-          // set dropoff second
           setDropoffPos([lat, lng]);
           setDropoff(results[0]?.label || `${lat},${lng}`);
-        } else {
-          alert("Pickup and dropoff are already selected. Reset to choose again.");
+
+          // fetch route when both points are chosen
+          fetchRoute([pickupPos[1], pickupPos[0]], [lng, lat]);
         }
       },
     });
     return null;
+  };
+
+  // Fetch route using OSRM API
+  const fetchRoute = async (start, end) => {
+    try {
+      const url = `https://router.project-osrm.org/route/v1/driving/${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.routes && data.routes.length > 0) {
+        const routeCoords = data.routes[0].geometry.coordinates.map((c) => [
+          c[1],
+          c[0],
+        ]);
+        setRoute(routeCoords);
+
+        const distanceKm = (data.routes[0].distance / 1000).toFixed(2);
+        const durationMin = Math.round(data.routes[0].duration / 60);
+        setTravelInfo({ distanceKm, durationMin });
+      }
+    } catch (err) {
+      console.error("Error fetching route:", err);
+    }
   };
 
   const handleRequestRide = async () => {
@@ -73,38 +98,29 @@ const RideRequest = () => {
     setDropoff("");
     setPickupPos(null);
     setDropoffPos(null);
+    setRoute(null);
+    setTravelInfo(null);
   };
 
   return (
     <div>
       <h2>Request a Ride</h2>
 
-      <input
-        type="text"
-        placeholder="Pickup Location"
-        value={pickup}
-        readOnly
-        style={{ marginBottom: "10px", width: "100%", padding: "6px" }}
-      />
-      <input
-        type="text"
-        placeholder="Dropoff Location"
-        value={dropoff}
-        readOnly
-        style={{ marginBottom: "10px", width: "100%", padding: "6px" }}
-      />
+      <input type="text" value={pickup} placeholder="Pickup" readOnly />
+      <input type="text" value={dropoff} placeholder="Dropoff" readOnly />
 
-      <button
-        onClick={handleRequestRide}
-        style={{ marginRight: "10px", padding: "8px 16px", cursor: "pointer" }}
-      >
-        Request Ride
-      </button>
-      <button onClick={resetPoints} style={{ padding: "8px 16px", cursor: "pointer" }}>
+      <button onClick={handleRequestRide}>Request Ride</button>
+      <button onClick={resetPoints} style={{ marginLeft: "10px" }}>
         Reset
       </button>
 
-      {/* Map */}
+      {travelInfo && (
+        <p>
+          🚗 Distance: {travelInfo.distanceKm} km | ⏱️ Estimated Time:{" "}
+          {travelInfo.durationMin} mins
+        </p>
+      )}
+
       <MapContainer
         center={[26.0667, 50.5577]} // Bahrain center
         zoom={12}
@@ -123,6 +139,7 @@ const RideRequest = () => {
             <Popup>Dropoff</Popup>
           </Marker>
         )}
+        {route && <Polyline positions={route} color="blue" />}
       </MapContainer>
     </div>
   );
