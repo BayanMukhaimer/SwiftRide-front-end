@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {createRide, updateacceptRide, getAllRide } from "../../../lib/api";
+import {createRide, updateAcceptRide, getAllRide } from "../../../lib/api";
 import { useNavigate } from "react-router";
 
 const RideForm = ({setFormIsShown}) => {
