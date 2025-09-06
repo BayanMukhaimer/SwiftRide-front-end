@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -9,7 +9,7 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
-import { createRide } from "../../../lib/api";
+import { createRide, getAllRide, updateAcceptRide } from "../../../lib/api";
 
 const RideRequest = () => {
   const [pickup, setPickup] = useState("");
@@ -21,7 +21,25 @@ const RideRequest = () => {
 
   const provider = new OpenStreetMapProvider();
 
-  // handle map clicks
+  // Auto-set pickup to current location
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          setPickupPos([latitude, longitude]);
+
+          const results = await provider.search({
+            query: `${latitude},${longitude}`,
+          });
+          setPickup(results[0]?.label || `${latitude},${longitude}`);
+        },
+        (err) => console.error("Error fetching current location:", err)
+      );
+    }
+  }, []);
+
+  // Handle map clicks
   const LocationSelector = () => {
     useMapEvents({
       click: async (e) => {
@@ -35,7 +53,7 @@ const RideRequest = () => {
           setDropoffPos([lat, lng]);
           setDropoff(results[0]?.label || `${lat},${lng}`);
 
-          // fetch route when both points are chosen
+          // Fetch route when both points are chosen
           fetchRoute([pickupPos[1], pickupPos[0]], [lng, lat]);
         }
       },
