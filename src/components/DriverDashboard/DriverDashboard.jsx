@@ -13,6 +13,7 @@ const DriverDashboard = () => {
 
   const token = localStorage.getItem("token");
   console.log("driver token", token);
+
   const driverId = (() => {
     try {
       console.log("decoded", jwtDecode(token));
@@ -39,11 +40,13 @@ const DriverDashboard = () => {
         setRides((current) => [ride, ...current]);
       }
     });
+
     return () => socket.disconnect();
   }, [driverId]);
 
   const handleAccept = async (ride) => {
     try {
+      console.log('header',authHeader())
       await axios.put(
         `${baseUrl}/rides/${ride._id}/accept`,
         {},
@@ -51,7 +54,7 @@ const DriverDashboard = () => {
       );
       socketRef.current.emit("acceptRide", {
         riderId: ride.rider,
-        driverId,
+        driverId, 
         rideId: ride._id,
       });
       const updated = rides.map((oneRide) => {
