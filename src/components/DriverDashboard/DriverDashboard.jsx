@@ -3,6 +3,7 @@ import { io } from "socket.io-client";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { authHeader } from "../../../lib/api";
+import DriverMap from "./DriverMap";
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const SOCKET_URL = "http://localhost:3000";
@@ -162,7 +163,12 @@ const DriverDashboard = () => {
             <div>
               <b>Fare:</b> {ride.fare ?? 0}
             </div>
+
             <RideActions ride={ride} />
+            <DriverMap 
+            pickup={ride.pickup} 
+            playing={ride.status === "in-progress"}
+            />
           </div>
         ))
       )}
