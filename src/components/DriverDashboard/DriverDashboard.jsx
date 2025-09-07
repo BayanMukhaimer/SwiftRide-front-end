@@ -52,14 +52,14 @@ const DriverDashboard = () => {
         {},
         { headers: authHeader() }
       );
-      socketRef.current.emit("acceptRide", {
+      socketRef.current.emit("accepted", {
         riderId: ride.rider,
         driverId, 
         rideId: ride._id,
       });
       const updated = rides.map((oneRide) => {
         if (oneRide._id === ride._id) {
-          return { ...oneRide, status: "acceptRide" };
+          return { ...oneRide, status: "accepted" };
         }
         return oneRide;
       });
@@ -77,14 +77,15 @@ const DriverDashboard = () => {
         {},
         { headers: authHeader() }
       );
-      socketRef.current.emit("in-progres", {
+      socketRef.current.emit("in-progress", {
         riderId: ride.rider,
         driverId,
         rideId: ride._id,
       });
+      
       const updated = rides.map((oneRide) => {
         if (oneRide._id === ride._id) {
-          return { ...oneRide, status: "in-progres" };
+          return { ...oneRide, status: "in-progress" };
         }
         return oneRide;
       });
@@ -130,7 +131,15 @@ const DriverDashboard = () => {
     if (ride.status === "in-progress") {
       return <button onClick={() => handleComplete(ride)}>Complete</button>;
     }
-    return null;
+    // if (ride.status === "completed") {
+    //   return (
+    //     <div>
+    //       <p>Ride started:{ride.startedAt} | Ride completed:{ride.completedAt}</p>
+    //     </div>
+    //   );
+    // }
+    else
+      return
   }
 
   return (
@@ -141,6 +150,9 @@ const DriverDashboard = () => {
       ) : (
         rides.map((ride) => (
           <div key={ride._id}>
+            <div>
+              <b>Ride state: </b>{ride.status}
+            </div>
             <div>
               <b>Pickup:</b> {ride.pickup.address}
             </div>
