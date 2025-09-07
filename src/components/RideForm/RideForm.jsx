@@ -17,6 +17,7 @@ const RideForm = ({ setFormIsShown }) => {
     const [dropoff, setDropoff] = useState({ address: "", lat: "", lng: "" });
     const [route, setRoute] = useState(null);
     const [travelInfo, setTravelInfo] = useState(null);
+    const [carType, setCarType] = useState(""); 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const provider = new OpenStreetMapProvider();
@@ -59,7 +60,6 @@ const RideForm = ({ setFormIsShown }) => {
                 } else if (!dropoff.lat && !dropoff.lng) {
                     setDropoff({ address: results[0]?.label || `${lat},${lng}`, lat, lng });
 
-                    // fetch route when both are set
                     fetchRoute([pickup.lng, pickup.lat], [lng, lat]);
                 }
             },
@@ -67,7 +67,16 @@ const RideForm = ({ setFormIsShown }) => {
         return null;
     };
 
-    // Fetch route using OSRM
+    const calculateFare = (distanceKm, durationMin, type) => {
+        const pricing = {
+            "4-seater": { base: 2, perKm: 0.5, perMin: 0.2 },
+            "6-seater": { base: 3, perKm: 0.8, perMin: 0.3 },
+        };
+
+        const rates = pricing[type];
+        return rates.base + distanceKm * rates.perKm + durationMin * rates.perMin;
+    };
+
     const fetchRoute = async (start, end) => {
         try {
             const url = `https://router.project-osrm.org/route/v1/driving/${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
@@ -84,13 +93,17 @@ const RideForm = ({ setFormIsShown }) => {
                 const distanceKm = (data.routes[0].distance / 1000).toFixed(2);
                 const durationMin = Math.round(data.routes[0].duration / 60);
 
-                const baseFare = 2;
-                const perKmRate = 0.5;
-                const perMinuteRate = 0.2;
-                const fare =
-                    baseFare + distanceKm * perKmRate + durationMin * perMinuteRate;
+                const fourFare = calculateFare(distanceKm, durationMin, "4-seater");
+                const sixFare = calculateFare(distanceKm, durationMin, "6-seater");
 
-                setTravelInfo({ distanceKm, durationMin, fare });
+                setTravelInfo({
+                    distanceKm,
+                    durationMin,
+                    fares: {
+                        "4-seater": fourFare,
+                        "6-seater": sixFare,
+                    },
+                });
             }
         } catch (err) {
             console.error("Error fetching route:", err);
@@ -100,8 +113,8 @@ const RideForm = ({ setFormIsShown }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (isSubmitting) return;
-        if (!pickup.lat || !dropoff.lat) {
-            alert("Please select both pickup and dropoff.");
+        if (!pickup.lat || !dropoff.lat || !carType) {
+            alert("Please select pickup, dropoff, and car type.");
             return;
         }
 
@@ -120,6 +133,8 @@ const RideForm = ({ setFormIsShown }) => {
             },
             distanceKm: travelInfo?.distanceKm,
             durationMin: travelInfo?.durationMin,
+            fare: travelInfo?.fares[carType],
+            vehicle: carType, 
         };
 
         try {
@@ -141,6 +156,7 @@ const RideForm = ({ setFormIsShown }) => {
         setDropoff({ address: "", lat: "", lng: "" });
         setRoute(null);
         setTravelInfo(null);
+        setCarType("");
     };
 
     return (
@@ -168,6 +184,18 @@ const RideForm = ({ setFormIsShown }) => {
                     required
                 />
 
+                
+                <strong>Choose Car Type</strong>
+                <select
+                    value={carType}
+                    onChange={(e) => setCarType(e.target.value)}
+                    required
+                >
+                    <option value="">-- Select Vehicle --</option>
+                    <option value="4-seater">4 Seater</option>
+                    <option value="6-seater">6 Seater</option>
+                </select>
+
                 <button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? "Submitting..." : "Request Ride"}
                 </button>
@@ -179,7 +207,8 @@ const RideForm = ({ setFormIsShown }) => {
             {travelInfo && (
                 <p>
                     🚗 Distance: {travelInfo.distanceKm} km | ⏱️ Time: {travelInfo.durationMin} mins <br />
-                    💰 Estimated Fare: {travelInfo.fare.toFixed(2)} BHD
+                    💰 4-Seater: {travelInfo.fares["4-seater"].toFixed(2)} BHD | 
+                    💰 6-Seater: {travelInfo.fares["6-seater"].toFixed(2)} BHD
                 </p>
             )}
 
