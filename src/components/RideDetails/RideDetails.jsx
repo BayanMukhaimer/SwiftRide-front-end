@@ -9,18 +9,31 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
-import { createRide } from "../../../lib/api";
-import { useNavigate } from "react-router";
+import { createRide, getAllRide } from "../../../lib/api";
 
-const RideForm = ({ setFormIsShown }) => {
+const RideRequest = () => {
   const [pickup, setPickup] = useState({ address: "", lat: "", lng: "" });
   const [dropoff, setDropoff] = useState({ address: "", lat: "", lng: "" });
   const [route, setRoute] = useState(null);
   const [travelInfo, setTravelInfo] = useState(null);
+  const [rides, setRides] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const provider = new OpenStreetMapProvider();
-  const navigate = useNavigate();
+
+  // Fetch user's rides
+  const fetchMyRides = async () => {
+    try {
+      const res = await getAllRide();
+      setRides(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch rides:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchMyRides();
+  }, []);
 
   // Auto-set pickup to current location
   useEffect(() => {
@@ -28,11 +41,7 @@ const RideForm = ({ setFormIsShown }) => {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords;
-          setPickup((prev) => ({
-            ...prev,
-            lat: latitude,
-            lng: longitude,
-          }));
+          setPickup((prev) => ({ ...prev, lat: latitude, lng: longitude }));
 
           const results = await provider.search({
             query: `${latitude},${longitude}`,
@@ -58,8 +67,6 @@ const RideForm = ({ setFormIsShown }) => {
           setPickup({ address: results[0]?.label || `${lat},${lng}`, lat, lng });
         } else if (!dropoff.lat && !dropoff.lng) {
           setDropoff({ address: results[0]?.label || `${lat},${lng}`, lat, lng });
-
-          // fetch route when both are set
           fetchRoute([pickup.lng, pickup.lat], [lng, lat]);
         }
       },
@@ -90,35 +97,29 @@ const RideForm = ({ setFormIsShown }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (isSubmitting) return;
+  const handleRequestRide = async () => {
     if (!pickup.lat || !dropoff.lat) {
-      alert("Please select both pickup and dropoff.");
+      alert("Please select both pickup and dropoff locations.");
       return;
     }
 
     setIsSubmitting(true);
-
-    const submitData = {
-      pickup: {
-        address: pickup.address,
-        lat: Number(pickup.lat),
-        lng: Number(pickup.lng),
-      },
-      dropoff: {
-        address: dropoff.address,
-        lat: Number(dropoff.lat),
-        lng: Number(dropoff.lng),
-      },
-    };
+    const token = localStorage.getItem("token");
 
     try {
-      const token = localStorage.getItem("token");
-      await createRide(submitData, token);
+      await createRide(
+        {
+          pickup,
+          dropoff,
+        },
+        token
+      );
       alert("Ride requested successfully!");
-      if (setFormIsShown) setFormIsShown(false);
-      navigate("/rides/myrides");
+      setPickup({ address: "", lat: "", lng: "" });
+      setDropoff({ address: "", lat: "", lng: "" });
+      setRoute(null);
+      setTravelInfo(null);
+      fetchMyRides(); // Refresh rides list
     } catch (err) {
       console.error(err);
       alert("Error creating ride");
@@ -127,45 +128,27 @@ const RideForm = ({ setFormIsShown }) => {
     }
   };
 
-  const resetPoints = () => {
-    setPickup({ address: "", lat: "", lng: "" });
-    setDropoff({ address: "", lat: "", lng: "" });
-    setRoute(null);
-    setTravelInfo(null);
-  };
-
   return (
     <div>
-      <h2>Book Your Ride</h2>
+      <h2>Request a Ride</h2>
 
-      <form onSubmit={handleSubmit}>
-        <strong>Pickup</strong>
-        <input
-          placeholder="Pickup address"
-          value={pickup.address}
-          onChange={(e) =>
-            setPickup((prev) => ({ ...prev, address: e.target.value }))
-          }
-          required
-        />
+      <input type="text" value={pickup.address} placeholder="Pickup" readOnly />
+      <input type="text" value={dropoff.address} placeholder="Dropoff" readOnly />
 
-        <strong>Dropoff</strong>
-        <input
-          placeholder="Dropoff address"
-          value={dropoff.address}
-          onChange={(e) =>
-            setDropoff((prev) => ({ ...prev, address: e.target.value }))
-          }
-          required
-        />
-
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : "Request Ride"}
-        </button>
-        <button type="button" onClick={resetPoints} style={{ marginLeft: "10px" }}>
-          Reset
-        </button>
-      </form>
+      <button onClick={handleRequestRide} disabled={isSubmitting}>
+        {isSubmitting ? "Submitting..." : "Request Ride"}
+      </button>
+      <button
+        onClick={() => {
+          setPickup({ address: "", lat: "", lng: "" });
+          setDropoff({ address: "", lat: "", lng: "" });
+          setRoute(null);
+          setTravelInfo(null);
+        }}
+        style={{ marginLeft: "10px" }}
+      >
+        Reset
+      </button>
 
       {travelInfo && (
         <p>
@@ -175,7 +158,7 @@ const RideForm = ({ setFormIsShown }) => {
       )}
 
       <MapContainer
-        center={[26.0667, 50.5577]} // Bahrain center
+        center={[26.0667, 50.5577]}
         zoom={12}
         style={{ height: "400px", width: "100%", marginTop: "20px" }}
       >
@@ -194,8 +177,21 @@ const RideForm = ({ setFormIsShown }) => {
         )}
         {route && <Polyline positions={route} color="blue" />}
       </MapContainer>
+
+      <h3>My Rides</h3>
+      {rides.length === 0 ? (
+        <p>No rides yet</p>
+      ) : (
+        <ul>
+          {rides.map((ride) => (
+            <li key={ride._id}>
+              {ride.pickup.address} ➜ {ride.dropoff.address} | Status: {ride.status}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
 
-export default RideForm;
+export default RideRequest;

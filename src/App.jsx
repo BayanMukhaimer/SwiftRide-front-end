@@ -6,10 +6,13 @@ import Homepage from "./components/Homepage/Homepage";
 import RegisterForm from "./components/RegisterForm/RegisterForm";
 import LoginForm from "./components/LoginForm/LoginForm";
 import RideForm from "./components/RideForm/RideForm";
+
 import HistoryRideList from "./components/HistoryRideList/HistoryRideList";
-import RideRequest from "./components/RideRequest/RideRequest";
+
 import DriverDashboard from "./components/DriverDashboard/DriverDashboard";
 import NavBar from "./components/NavBar/NavBar";
+import RideDetails from "./components/RideDetails/RideDetails";
+
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -34,6 +37,7 @@ const App = () => {
       <Router>
         <NavBar onLogout={handleLogout} />
 
+
         <Routes>
           <Route path="/" element={<Homepage />} />
           <Route path="/signup" element={<RegisterForm />} />
@@ -41,15 +45,25 @@ const App = () => {
 
           <Route
             path="/rides/request"
-            element={<RideForm setFormIsShown={setFormIsShown} />}
+            element={
+              <RideForm
+                setFormIsShown={setFormIsShown}
+              />
+            }
           />
-          <Route path="/ride-request" element={<RideRequest />} />
           <Route path="/rides/myrides" element={<HistoryRideList />} />
+          <Route
+            path="/rides/:id"
+            element={
+              <RideDetails />
+            }
+          />
           <Route path="/driver" element={<DriverDashboard />} />
         </Routes>
       </Router>
     </div>
   );
+
 };
 
 export default App;
