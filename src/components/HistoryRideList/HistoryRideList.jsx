@@ -35,7 +35,7 @@ const HistoryRideList = () => {
       <ol>
         {rides.map((ride) => (
           <li key={ride._id} style={{ marginBottom: "20px" }}>
-            <Link to={`/rides/${ride._id}`} style={{ textDecoration: "none", color: "inherit" }}>
+            <Link to={`/rides/${ride._id}`}>
               <p><strong>Status:</strong> {ride.status}</p>
               <p><strong>Driver:</strong> {ride.driver ? ride.driver.name : "Unassigned"}</p>
               <p><strong>Fare:</strong> {ride.fare ?? 0}</p>
