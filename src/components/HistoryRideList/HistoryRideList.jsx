@@ -1,57 +1,59 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 import { ClipLoader } from "react-spinners";
 
 import { getAllRide as fetchRides } from "../../../lib/api";
-import RideCancelButton  from "./RideCancelButton"
+import RideCancelButton from "./RideCancelButton";
 
 const HistoryRideList = () => {
-    const [ rides, setRides ] = useState([]);
-    const [ loading, setLoading] = useState(true);
-    const navigate = useNavigate(); 
+  const [rides, setRides] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-    const getAllRide = async () => {
-        const response = await fetchRides();
-        setRides(response.data || []);
-    };
+  const getAllRide = async () => {
+    try {
+      const response = await fetchRides();
+      setRides(response.data || []);
+    } catch (err) {
+      console.error("Failed to fetch rides:", err);
+      setRides([]);
+    }
+  };
 
-    useEffect(() => {
-        (async () => {
-            await getAllRide()
-            setLoading(false);
-        })();
-    }, []);
+  useEffect(() => {
+    (async () => {
+      await getAllRide();
+      setLoading(false);
+    })();
+  }, []);
 
-    if (loading) return <ClipLoader />;
+  if (loading) return <ClipLoader />;
 
-    return (
-        <div>
-            <ol>
-               
-                    {rides.map(ride => (
-                        <li key={ride._id}>
-                            <p><strong>ride status:</strong> {ride.status}</p>
-                            <p><strong>Driver:</strong> {ride.driver ? ride.driver.name : "Unassigned"}</p>
-                            <p><strong>fare:</strong> {ride.fare ?? 0}</p>
-                            <p><strong>Pickup:</strong> {ride.pickup.address} </p>
-                            <p><strong>Dropoff:</strong> {ride.dropoff.address} </p>   
-                            <div>
-                            {/* <button className="btn" onClick={() => handleEditClick(booking)}>Update</button> */}
+  return (
+    <div>
+      <h2>My Rides</h2>
+      <ol>
+        {rides.map((ride) => (
+          <li key={ride._id} style={{ marginBottom: "20px" }}>
+            <Link to={`/rides/${ride._id}`}>
+              <p><strong>Status:</strong> {ride.status}</p>
+              <p><strong>Driver:</strong> {ride.driver ? ride.driver.name : "Unassigned"}</p>
+              <p><strong>Fare:</strong> {ride.fare ?? 0}</p>
+              <p><strong>Pickup:</strong> {ride.pickup.address}</p>
+              <p><strong>Dropoff:</strong> {ride.dropoff.address}</p>
+            </Link>
 
-                            {ride.status === "requested" 
-                            ?
-                            <RideCancelButton
-                                rideId={ride._id}
-                                getAllRide={getAllRide}
-                            />
-                            :
-                            null
-                            }
-                            </div>
-                        </li>
-                    ))}
-            </ol>
-        </div>
-    )
-}
+            {ride.status === "requested" && (
+              <RideCancelButton
+                rideId={ride._id}
+                getAllRide={getAllRide}
+              />
+            )}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+};
+
 export default HistoryRideList;
