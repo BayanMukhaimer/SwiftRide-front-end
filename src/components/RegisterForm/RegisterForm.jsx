@@ -8,8 +8,8 @@ function SignUp() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("");
-  const [ vehicle, setVehicle] = useState("");
-  
+  const [vehicle, setVehicle] = useState("");
+
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
@@ -21,7 +21,7 @@ function SignUp() {
         password,
         phone,
         role,
-        vehicle
+        vehicle,
       });
       alert("User registered, please login");
       navigate("/login");
@@ -40,10 +40,10 @@ function SignUp() {
           onChange={(event) => setName(event.target.value)}
         />
         <input
-            placeholder="email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
+          placeholder="email"
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
         />
         <input
           placeholder="Password"
@@ -61,17 +61,21 @@ function SignUp() {
           onChange={(event) => setRole(event.target.value)}
           required
         >
-            <option value="">Select role</option>
-            <option value="rider">Rider</option>
-            <option value="driver">Driver</option>
+          <option value="">Select role</option>
+          <option value="rider">Rider</option>
+          <option value="driver">Driver</option>
         </select>
         {role === "driver" ? (
-        <input
-          placeholder="vehicle"
-          value={vehicle}
-          onChange={(event) => setVehicle(event.target.value)}
-          required
-        />
+          <select
+            placeholder="vehicle"
+            value={vehicle}
+            onChange={(event) => setVehicle(event.target.value)}
+            required
+          >
+            <option value="">Select a vehicle</option>
+            <option value="rider">4 seats</option>
+            <option value="driver">6 seats</option>
+          </select>
         ) : null}
 
         <button type="submit">Sign Up</button>
