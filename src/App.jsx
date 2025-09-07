@@ -8,7 +8,6 @@ import RegisterForm from "./components/RegisterForm/RegisterForm"
 import LoginForm from "./components/LoginForm/LoginForm";
 import RideForm from "./components/RideForm/RideForm";
 import HistoryRideList from "./components/HistoryRideList/HistoryRideList"
-import RideRequest from "./components/RideRequest/RideRequest";
 
 
 const App = () => {
@@ -51,12 +50,7 @@ const App = () => {
           />
           }
         />
-        <Route
-            path="/ride-request"
-            element={
-             <RideRequest
-              />}
-          />
+        
         <Route
           path="/rides/myrides"
           element={

@@ -1,106 +1,201 @@
-import { useState } from "react";
-import {createRide, updateAcceptRide, getAllRide } from "../../../lib/api";
+import { useState, useEffect } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+  useMapEvents,
+} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import { OpenStreetMapProvider } from "leaflet-geosearch";
+import { createRide } from "../../../lib/api";
 import { useNavigate } from "react-router";
 
-const RideForm = ({setFormIsShown}) => {
+const RideForm = ({ setFormIsShown }) => {
+  const [pickup, setPickup] = useState({ address: "", lat: "", lng: "" });
+  const [dropoff, setDropoff] = useState({ address: "", lat: "", lng: "" });
+  const [route, setRoute] = useState(null);
+  const [travelInfo, setTravelInfo] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [formData, setFormData] = useState({
-        pickup:  { address: "", lat: "", lng: "" },
-        dropoff: { address: "", lat: "", lng: "" },
-        fare: ""
+  const provider = new OpenStreetMapProvider();
+  const navigate = useNavigate();
+
+  // Auto-set pickup to current location
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          setPickup((prev) => ({
+            ...prev,
+            lat: latitude,
+            lng: longitude,
+          }));
+
+          const results = await provider.search({
+            query: `${latitude},${longitude}`,
+          });
+          setPickup((prev) => ({
+            ...prev,
+            address: results[0]?.label || `${latitude},${longitude}`,
+          }));
+        },
+        (err) => console.error("Error fetching current location:", err)
+      );
+    }
+  }, []);
+
+  // Map click to select pickup/dropoff
+  const LocationSelector = () => {
+    useMapEvents({
+      click: async (e) => {
+        const { lat, lng } = e.latlng;
+        const results = await provider.search({ query: `${lat},${lng}` });
+
+        if (!pickup.lat && !pickup.lng) {
+          setPickup({ address: results[0]?.label || `${lat},${lng}`, lat, lng });
+        } else if (!dropoff.lat && !dropoff.lng) {
+          setDropoff({ address: results[0]?.label || `${lat},${lng}`, lat, lng });
+
+          // fetch route when both are set
+          fetchRoute([pickup.lng, pickup.lat], [lng, lat]);
+        }
+      },
     });
-    
-    const navigate = useNavigate();
+    return null;
+  };
 
-    const setField = (section, key, value) =>
-    setFormData(formData => ({ ...formData, [section]: { ...formData[section], [key]: value } }));
+  // Fetch route using OSRM
+  const fetchRoute = async (start, end) => {
+    try {
+      const url = `https://router.project-osrm.org/route/v1/driving/${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
+      const res = await fetch(url);
+      const data = await res.json();
 
-    const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (isSubmitting) 
-        return;
+      if (data.routes && data.routes.length > 0) {
+        const routeCoords = data.routes[0].geometry.coordinates.map((c) => [
+          c[1],
+          c[0],
+        ]);
+        setRoute(routeCoords);
+
+        const distanceKm = (data.routes[0].distance / 1000).toFixed(2);
+        const durationMin = Math.round(data.routes[0].duration / 60);
+        setTravelInfo({ distanceKm, durationMin });
+      }
+    } catch (err) {
+      console.error("Error fetching route:", err);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    if (!pickup.lat || !dropoff.lat) {
+      alert("Please select both pickup and dropoff.");
+      return;
+    }
 
     setIsSubmitting(true);
 
     const submitData = {
-    pickup: {
-        address: formData.pickup.address,
-        lat: Number(formData.pickup.lat),
-        lng: Number(formData.pickup.lng),
-    },
-    dropoff: {
-        address: formData.dropoff.address,
-        lat: Number(formData.dropoff.lat),
-        lng: Number(formData.dropoff.lng),
-    },
-    fare: formData.fare ? Number(formData.fare) : 0
+      pickup: {
+        address: pickup.address,
+        lat: Number(pickup.lat),
+        lng: Number(pickup.lng),
+      },
+      dropoff: {
+        address: dropoff.address,
+        lat: Number(dropoff.lat),
+        lng: Number(dropoff.lng),
+      },
     };
 
-    await createRide(submitData);
-    setFormIsShown(false);
-    setIsSubmitting(false);
-    navigate("/rides/myrides");
-    }  
+    try {
+      const token = localStorage.getItem("token");
+      await createRide(submitData, token);
+      alert("Ride requested successfully!");
+      if (setFormIsShown) setFormIsShown(false);
+      navigate("/rides/myrides");
+    } catch (err) {
+      console.error(err);
+      alert("Error creating ride");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    return(
-        <div>
-            <form onSubmit={handleSubmit}>
-            <h2>Book Your Ride</h2>
+  const resetPoints = () => {
+    setPickup({ address: "", lat: "", lng: "" });
+    setDropoff({ address: "", lat: "", lng: "" });
+    setRoute(null);
+    setTravelInfo(null);
+  };
 
-            <strong>Pickup</strong>
-            <input
-                placeholder="Pickup address"
-                value={formData.pickup.address}
-                onChange={event => setField("pickup", "address", event.target.value)}
-                required
-            />
-            <div>
-                <input
-                placeholder="Pickup lat"
-                value={formData.pickup.lat}
-                onChange={event => setField("pickup", "lat", event.target.value)}
-                required
-                />
-                <input
-                placeholder="Pickup lng"
-                value={formData.pickup.lng}
-                onChange={event => setField("pickup", "lng", event.target.value)}
-                required
-                />
-            </div>
+  return (
+    <div>
+      <h2>Book Your Ride</h2>
 
-            <strong>Dropoff</strong>
-            <input
-                placeholder="Dropoff address"
-                value={formData.dropoff.address}
-                onChange={event => setField("dropoff", "address", event.target.value)}
-                required
-            />
-            <div>
-                <input
-                placeholder="Dropoff lat"
-                value={formData.dropoff.lat}
-                onChange={event => setField("dropoff", "lat", event.target.value)}
-                required
-                />
-                <input
-                placeholder="Dropoff lng"
-                value={formData.dropoff.lng}
-                onChange={event => setField("dropoff", "lng", event.target.value)}
-                required
-                />
-            </div>
+      <form onSubmit={handleSubmit}>
+        <strong>Pickup</strong>
+        <input
+          placeholder="Pickup address"
+          value={pickup.address}
+          onChange={(e) =>
+            setPickup((prev) => ({ ...prev, address: e.target.value }))
+          }
+          required
+        />
 
-            {/* fare */}
+        <strong>Dropoff</strong>
+        <input
+          placeholder="Dropoff address"
+          value={dropoff.address}
+          onChange={(e) =>
+            setDropoff((prev) => ({ ...prev, address: e.target.value }))
+          }
+          required
+        />
 
-            <button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Request Ride"}
-            </button>
-            </form>   
-        </div> 
-    )
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Submitting..." : "Request Ride"}
+        </button>
+        <button type="button" onClick={resetPoints} style={{ marginLeft: "10px" }}>
+          Reset
+        </button>
+      </form>
 
-    
-}
+      {travelInfo && (
+        <p>
+          🚗 Distance: {travelInfo.distanceKm} km | ⏱️ Estimated Time:{" "}
+          {travelInfo.durationMin} mins
+        </p>
+      )}
+
+      <MapContainer
+        center={[26.0667, 50.5577]} // Bahrain center
+        zoom={12}
+        style={{ height: "400px", width: "100%", marginTop: "20px" }}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <LocationSelector />
+
+        {pickup.lat && pickup.lng && (
+          <Marker position={[pickup.lat, pickup.lng]}>
+            <Popup>Pickup</Popup>
+          </Marker>
+        )}
+        {dropoff.lat && dropoff.lng && (
+          <Marker position={[dropoff.lat, dropoff.lng]}>
+            <Popup>Dropoff</Popup>
+          </Marker>
+        )}
+        {route && <Polyline positions={route} color="blue" />}
+      </MapContainer>
+    </div>
+  );
+};
+
 export default RideForm;
