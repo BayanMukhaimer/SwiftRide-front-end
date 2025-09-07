@@ -148,24 +148,6 @@ const RideForm = ({ setFormIsShown }) => {
           }
           required
         />
-        <div>
-          <input
-            placeholder="Pickup lat"
-            value={pickup.lat}
-            onChange={(e) =>
-              setPickup((prev) => ({ ...prev, lat: e.target.value }))
-            }
-            required
-          />
-          <input
-            placeholder="Pickup lng"
-            value={pickup.lng}
-            onChange={(e) =>
-              setPickup((prev) => ({ ...prev, lng: e.target.value }))
-            }
-            required
-          />
-        </div>
 
         <strong>Dropoff</strong>
         <input
@@ -176,24 +158,6 @@ const RideForm = ({ setFormIsShown }) => {
           }
           required
         />
-        <div>
-          <input
-            placeholder="Dropoff lat"
-            value={dropoff.lat}
-            onChange={(e) =>
-              setDropoff((prev) => ({ ...prev, lat: e.target.value }))
-            }
-            required
-          />
-          <input
-            placeholder="Dropoff lng"
-            value={dropoff.lng}
-            onChange={(e) =>
-              setDropoff((prev) => ({ ...prev, lng: e.target.value }))
-            }
-            required
-          />
-        </div>
 
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Submitting..." : "Request Ride"}
