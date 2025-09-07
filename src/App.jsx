@@ -2,12 +2,15 @@ import { jwtDecode } from "jwt-decode";
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router";
 
-
-import Homepage from "./components/Homepage/Homepage"
-import RegisterForm from "./components/RegisterForm/RegisterForm"
+import Homepage from "./components/Homepage/Homepage";
+import RegisterForm from "./components/RegisterForm/RegisterForm";
 import LoginForm from "./components/LoginForm/LoginForm";
 import RideForm from "./components/RideForm/RideForm";
-import HistoryRideList from "./components/HistoryRideList/HistoryRideList"
+
+import HistoryRideList from "./components/HistoryRideList/HistoryRideList";
+
+import DriverDashboard from "./components/DriverDashboard/DriverDashboard";
+import NavBar from "./components/NavBar/NavBar";
 import RideDetails from "./components/RideDetails/RideDetails";
 
 
@@ -24,19 +27,16 @@ const App = () => {
     console.log(decodedToken);
   }
 
+  function handleLogout() {
+    setToken(null);
+    localStorage.removeItem("token");
+  }
+
   return (
-
     <div>
-
       <Router>
+        <NavBar onLogout={handleLogout} />
 
-        <nav>
-          {/* <Link to="/">Home</Link> */}
-          <Link to="/signup">Sign Up</Link>
-          <Link to="/login">Log in</Link>
-          <Link to="/rides/request">Request Ride</Link>
-          <Link to="/rides/myrides">My Rides</Link>
-        </nav>
 
         <Routes>
           <Route path="/" element={<Homepage />} />
@@ -51,30 +51,19 @@ const App = () => {
               />
             }
           />
-
-          <Route
-            path="/rides/myrides"
-            element={
-              <HistoryRideList
-
-              />
-            }
-          />
-
+          <Route path="/rides/myrides" element={<HistoryRideList />} />
           <Route
             path="/rides/:id"
             element={
               <RideDetails />
             }
           />
-
+          <Route path="/driver" element={<DriverDashboard />} />
         </Routes>
       </Router>
     </div>
+  );
 
-
-
-  )
 };
 
 export default App;
