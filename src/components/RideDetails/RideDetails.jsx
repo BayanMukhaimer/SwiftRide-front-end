@@ -1,99 +1,197 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
   Polyline,
+  useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { getRideById } from "../../../lib/api";
+import { OpenStreetMapProvider } from "leaflet-geosearch";
+import { createRide, getAllRide } from "../../../lib/api";
 
-const RideDetails = () => {
-  const { id } = useParams(); // ride ID from URL
-  const [ride, setRide] = useState(null);
+const RideRequest = () => {
+  const [pickup, setPickup] = useState({ address: "", lat: "", lng: "" });
+  const [dropoff, setDropoff] = useState({ address: "", lat: "", lng: "" });
   const [route, setRoute] = useState(null);
+  const [travelInfo, setTravelInfo] = useState(null);
+  const [rides, setRides] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const provider = new OpenStreetMapProvider();
+
+  // Fetch user's rides
+  const fetchMyRides = async () => {
+    try {
+      const res = await getAllRide();
+      setRides(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch rides:", err);
+    }
+  };
 
   useEffect(() => {
-    const fetchRide = async () => {
-      try {
-        const data = await getRideById(id);
-        setRide(data);
+    fetchMyRides();
+  }, []);
 
-        // If pickup & dropoff locations exist, fetch route from OSRM
-        if (data.pickup?.location && data.dropoff?.location) {
-          const start = [data.pickup.location.lng, data.pickup.location.lat];
-          const end = [data.dropoff.location.lng, data.dropoff.location.lat];
-          const url = `https://router.project-osrm.org/route/v1/driving/${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
-          const res = await fetch(url);
-          const routeData = await res.json();
-          if (routeData.routes && routeData.routes.length > 0) {
-            const routeCoords = routeData.routes[0].geometry.coordinates.map(
-              (c) => [c[1], c[0]]
-            );
-            setRoute(routeCoords);
-          }
+  // Auto-set pickup to current location
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          setPickup((prev) => ({ ...prev, lat: latitude, lng: longitude }));
+
+          const results = await provider.search({
+            query: `${latitude},${longitude}`,
+          });
+          setPickup((prev) => ({
+            ...prev,
+            address: results[0]?.label || `${latitude},${longitude}`,
+          }));
+        },
+        (err) => console.error("Error fetching current location:", err)
+      );
+    }
+  }, []);
+
+  // Map click to select pickup/dropoff
+  const LocationSelector = () => {
+    useMapEvents({
+      click: async (e) => {
+        const { lat, lng } = e.latlng;
+        const results = await provider.search({ query: `${lat},${lng}` });
+
+        if (!pickup.lat && !pickup.lng) {
+          setPickup({ address: results[0]?.label || `${lat},${lng}`, lat, lng });
+        } else if (!dropoff.lat && !dropoff.lng) {
+          setDropoff({ address: results[0]?.label || `${lat},${lng}`, lat, lng });
+          fetchRoute([pickup.lng, pickup.lat], [lng, lat]);
         }
-      } catch (err) {
-        console.error("Error fetching ride:", err);
+      },
+    });
+    return null;
+  };
+
+  // Fetch route using OSRM
+  const fetchRoute = async (start, end) => {
+    try {
+      const url = `https://router.project-osrm.org/route/v1/driving/${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.routes && data.routes.length > 0) {
+        const routeCoords = data.routes[0].geometry.coordinates.map((c) => [
+          c[1],
+          c[0],
+        ]);
+        setRoute(routeCoords);
+
+        const distanceKm = (data.routes[0].distance / 1000).toFixed(2);
+        const durationMin = Math.round(data.routes[0].duration / 60);
+        setTravelInfo({ distanceKm, durationMin });
       }
-    };
+    } catch (err) {
+      console.error("Error fetching route:", err);
+    }
+  };
 
-    fetchRide();
-  }, [id]);
+  const handleRequestRide = async () => {
+    if (!pickup.lat || !dropoff.lat) {
+      alert("Please select both pickup and dropoff locations.");
+      return;
+    }
 
-  if (!ride) return <p>Loading ride details...</p>;
+    setIsSubmitting(true);
+    const token = localStorage.getItem("token");
+
+    try {
+      await createRide(
+        {
+          pickup,
+          dropoff,
+        },
+        token
+      );
+      alert("Ride requested successfully!");
+      setPickup({ address: "", lat: "", lng: "" });
+      setDropoff({ address: "", lat: "", lng: "" });
+      setRoute(null);
+      setTravelInfo(null);
+      fetchMyRides(); // Refresh rides list
+    } catch (err) {
+      console.error(err);
+      alert("Error creating ride");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div>
-      <h2>Ride Details</h2>
-      <p>
-        <strong>Status:</strong> {ride.status}
-      </p>
-      <p>
-        <strong>Pickup:</strong> {ride.pickup?.address}
-      </p>
-      <p>
-        <strong>Dropoff:</strong> {ride.dropoff?.address}
-      </p>
-      {ride.driver && (
+      <h2>Request a Ride</h2>
+
+      <input type="text" value={pickup.address} placeholder="Pickup" readOnly />
+      <input type="text" value={dropoff.address} placeholder="Dropoff" readOnly />
+
+      <button onClick={handleRequestRide} disabled={isSubmitting}>
+        {isSubmitting ? "Submitting..." : "Request Ride"}
+      </button>
+      <button
+        onClick={() => {
+          setPickup({ address: "", lat: "", lng: "" });
+          setDropoff({ address: "", lat: "", lng: "" });
+          setRoute(null);
+          setTravelInfo(null);
+        }}
+        style={{ marginLeft: "10px" }}
+      >
+        Reset
+      </button>
+
+      {travelInfo && (
         <p>
-          <strong>Driver:</strong> {ride.driver.name} | {ride.driver.email} |{" "}
-          {ride.driver.vehicle || "No vehicle info"}
-        </p>
-      )}
-      {ride.fare && (
-        <p>
-          <strong>Fare:</strong> {ride.fare}
+          🚗 Distance: {travelInfo.distanceKm} km | ⏱️ Estimated Time:{" "}
+          {travelInfo.durationMin} mins
         </p>
       )}
 
-      {route && (
-        <MapContainer
-          center={[
-            ride.pickup.location.lat,
-            ride.pickup.location.lng,
-          ]}
-          zoom={13}
-          style={{ height: "400px", width: "100%", marginTop: "20px" }}
-        >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <Marker
-            position={[ride.pickup.location.lat, ride.pickup.location.lng]}
-          >
+      <MapContainer
+        center={[26.0667, 50.5577]}
+        zoom={12}
+        style={{ height: "400px", width: "100%", marginTop: "20px" }}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <LocationSelector />
+
+        {pickup.lat && pickup.lng && (
+          <Marker position={[pickup.lat, pickup.lng]}>
             <Popup>Pickup</Popup>
           </Marker>
-          <Marker
-            position={[ride.dropoff.location.lat, ride.dropoff.location.lng]}
-          >
+        )}
+        {dropoff.lat && dropoff.lng && (
+          <Marker position={[dropoff.lat, dropoff.lng]}>
             <Popup>Dropoff</Popup>
           </Marker>
-          <Polyline positions={route} color="blue" />
-        </MapContainer>
+        )}
+        {route && <Polyline positions={route} color="blue" />}
+      </MapContainer>
+
+      <h3>My Rides</h3>
+      {rides.length === 0 ? (
+        <p>No rides yet</p>
+      ) : (
+        <ul>
+          {rides.map((ride) => (
+            <li key={ride._id}>
+              {ride.pickup.address} ➜ {ride.dropoff.address} | Status: {ride.status}
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
 };
 
-export default RideDetails;
+export default RideRequest;
