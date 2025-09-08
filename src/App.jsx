@@ -1,69 +1,102 @@
 import { jwtDecode } from "jwt-decode";
-import { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router";
+import { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router";
 
 import Homepage from "./components/Homepage/Homepage";
 import RegisterForm from "./components/RegisterForm/RegisterForm";
 import LoginForm from "./components/LoginForm/LoginForm";
 import RideForm from "./components/RideForm/RideForm";
-
 import HistoryRideList from "./components/HistoryRideList/HistoryRideList";
-
 import DriverDashboard from "./components/DriverDashboard/DriverDashboard";
 import NavBar from "./components/NavBar/NavBar";
 import RideDetails from "./components/RideDetails/RideDetails";
 
-
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
-  const [formIsShown, setFormIsShown] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  function handleLogin(newToken) {
+  useEffect(() => {
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        console.log('decoded',decoded)
+        setCurrentUser(decoded);
+      } catch (err) {
+        console.error("Invalid token:", err);
+        setCurrentUser(null);
+      }
+    }
+  }, [token]);
+
+  const handleLogin = (newToken) => {
+    localStorage.setItem("token", newToken);
     setToken(newToken);
-  }
+  };
 
-  if (token) {
-    const decodedToken = jwtDecode(token);
-    console.log(decodedToken);
-  }
-
-  function handleLogout() {
-    setToken(null);
+  const handleLogout = () => {
     localStorage.removeItem("token");
-  }
+    setToken(null);
+    setCurrentUser(null);
+  };
 
   return (
-    <div>
-      <Router>
-        <NavBar onLogout={handleLogout} />
+    <Router>
+      <NavBar currentUser={currentUser} onLogout={handleLogout} />
 
+      <Routes>
 
-        <Routes>
-          <Route path="/" element={<Homepage />} />
-          <Route path="/signup" element={<RegisterForm />} />
-          <Route path="/login" element={<LoginForm onLogin={handleLogin} />} />
+        <Route
+          path="/"
+          element={
+            <Homepage />
+          }
+        />
 
-          <Route
-            path="/rides/request"
-            element={
-              <RideForm
-                setFormIsShown={setFormIsShown}
-              />
-            }
-          />
-          <Route path="/rides/myrides" element={<HistoryRideList />} />
-          <Route
-            path="/rides/:id"
-            element={
-              <RideDetails />
-            }
-          />
-          <Route path="/driver" element={<DriverDashboard />} />
-        </Routes>
-      </Router>
-    </div>
+        <Route
+          path="/signup"
+          element={
+            <RegisterForm />
+          }
+        />
+
+        <Route
+          path="/login"
+          element={
+            <LoginForm onLogin={handleLogin} setCurrentUser={setCurrentUser}/>
+          }
+        />
+
+        <Route
+          path="/rides/request"
+          element={
+            <RideForm />
+          }
+        />
+
+        <Route
+          path="/rides/myrides"
+          element={
+            <HistoryRideList />
+          }
+        />
+
+        <Route
+          path="/rides/:id"
+          element={
+            <RideDetails />
+          }
+        />
+
+        <Route
+          path="/driver"
+          element={
+            <DriverDashboard />
+          }
+        />
+
+      </Routes>
+    </Router>
   );
-
 };
 
 export default App;
