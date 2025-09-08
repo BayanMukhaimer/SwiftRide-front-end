@@ -52,7 +52,7 @@ export default function CarMarker({ path, playing } ) {
       previousPosition={prev}
       duration={700}
     >
-      <Popup>Driver on the round 🚗</Popup>
+      
     </LeafletTrackingMarker>
   );
 }

@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { React, useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import { ClipLoader } from "react-spinners";
-
 import { getAllRide as fetchRides } from "../../../lib/api";
 import RideCancelButton from "./RideCancelButton";
 
@@ -20,15 +19,16 @@ const HistoryRideList = () => {
     }
   };
 
+  
   useEffect(() => {
     (async () => {
       await getAllRide();
       setLoading(false);
     })();
   }, []);
-
+  
   if (loading) return <ClipLoader />;
-
+  
   return (
     <div>
       <h2>My Rides</h2>
@@ -36,18 +36,21 @@ const HistoryRideList = () => {
         {rides.map((ride) => (
           <li key={ride._id} style={{ marginBottom: "20px" }}>
             <Link to={`/rides/${ride._id}`}>
-              <p><strong>Status:</strong> {ride.status}</p>
-              <p><strong>Driver:</strong> {ride.driver ? ride.driver.name : "Unassigned"}</p>
-              <p><strong>Fare:</strong> {ride.fare ?? 0}</p>
-              <p><strong>Pickup:</strong> {ride.pickup.address}</p>
-              <p><strong>Dropoff:</strong> {ride.dropoff.address}</p>
+              <p>
+                <strong>Status:</strong> {ride.status}
+              </p>
+              <p>
+                <strong>Fare:</strong> {ride.fare ?? 0}
+              </p>
+              <p>
+                <strong>Pickup:</strong> {ride.pickup.address}
+              </p>
+              <p>
+                <strong>Dropoff:</strong> {ride.dropoff.address}
+              </p>
             </Link>
-
             {ride.status === "requested" && (
-              <RideCancelButton
-                rideId={ride._id}
-                getAllRide={getAllRide}
-              />
+              <RideCancelButton rideId={ride._id} getAllRide={getAllRide} />
             )}
           </li>
         ))}
