@@ -2,56 +2,88 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { getRideById, cancelRide } from "../../../lib/api";
-import RideCancelButton from "../HistoryRideList/RideCancelButton";
 
-const RideDetails = () => {
+import { getRideById, cancelRide } from "../../../lib/api";
+import CarMarker from "../DriverDashboard/CarMarker"; 
+
+export default function RideDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [ride, setRide] = useState(null);
-  const [routeCoords, setRouteCoords] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [custPath, setCustPath] = useState(null);
+  const [drvPath, setDrvPath] = useState(null);   
+
+
   useEffect(() => {
-    const fetchRide = async () => {
+    const load = async () => {
       try {
         const data = await getRideById(id);
         setRide(data);
 
-        // If pickup and dropoff exist, fetch route coordinates
-        if (data.pickup && data.dropoff) {
+        if (data?.pickup && data?.dropoff) {
           const url = `https://router.project-osrm.org/route/v1/driving/${data.pickup.lng},${data.pickup.lat};${data.dropoff.lng},${data.dropoff.lat}?overview=full&geometries=geojson`;
           const res = await fetch(url);
-          const routeData = await res.json();
-          if (routeData.routes && routeData.routes.length > 0) {
-            const coords = routeData.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
-            setRouteCoords(coords);
-          }
+          const json = await res.json();
+          const coords = json?.routes?.[0]?.geometry?.coordinates?.map(
+            ([lng, lat]) => [Number(lat), Number(lng)]
+          ) || [];
+          setCustPath(coords);
+        } else {
+          setCustPath(null);
         }
-      } catch (err) {
-        console.error("Failed to fetch ride:", err);
-        alert("Failed to fetch ride details");
+      } catch (e) {
+        console.error("Failed to load ride:", e);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchRide();
+    load();
   }, [id]);
 
-  if (loading) return <p>Loading ride details...</p>;
+ 
+  useEffect(() => {
+    const loadDriverPath = async () => {
+      if (!ride) return;
+
+      const statusOk = ride.status === "accepted" || ride.status === "in-progress";
+      const start = { lat: 26.2285, lng: 50.586 }
+      const pk = ride.pickup;
+
+      if (!statusOk || !start?.lat || !start?.lng || !pk?.lat || !pk?.lng) {
+        setDrvPath(null);
+        return;
+      }
+
+      try {
+        const url = `https://router.project-osrm.org/route/v1/driving/${start.lng},${start.lat};${pk.lng},${pk.lat}?overview=full&geometries=geojson`;
+        const res = await fetch(url);
+        const json = await res.json();
+        const coords = json?.routes?.[0]?.geometry?.coordinates?.map(
+          ([lng, lat]) => [Number(lat), Number(lng)]
+        ) || [];
+        setDrvPath(coords);
+      } catch (e) {
+        console.error("Failed to load driver path:", e);
+        setDrvPath(null);
+      }
+    };
+    loadDriverPath();
+  }, [ride?.status, ride?.driverStart, ride?.driver?.location, ride?.pickup?.lat, ride?.pickup?.lng]);
+
+  if (loading) return <p>Loading ride...</p>;
   if (!ride) return <p>Ride not found</p>;
 
-  const handleCancel = async () => {
-    try {
-      await cancelRide(ride._id);
-      alert("Ride cancelled successfully");
-      navigate("/rides/myrides");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to cancel ride");
-    }
-  };
+  const center = [Number(ride.pickup.lat), Number(ride.pickup.lng)];
+  const showCar = ride.status === "accepted" || ride.status === "in-progress";
+  const playing = ride.status === "in-progress";
+
+  console.log("status:", ride?.status);
+console.log("driver start:", ride?.driverStart || ride?.driver?.location);
+console.log("pickup:", ride?.pickup);
+console.log("drvPath points:", drvPath?.length, drvPath?.[0]);
 
   return (
     <div>
@@ -59,31 +91,52 @@ const RideDetails = () => {
       <p><strong>Status:</strong> {ride.status}</p>
       <p><strong>Fare:</strong> {ride.fare ?? 0}</p>
       <p><strong>Driver:</strong> {ride.driver?.name || "Unassigned"}</p>
-      <p><strong>Pickup:</strong> {ride.pickup.address}</p>
-      <p><strong>Dropoff:</strong> {ride.dropoff.address}</p>
+      <p><strong>Pickup:</strong> {ride.pickup?.address}</p>
+      <p><strong>Dropoff:</strong> {ride.dropoff?.address}</p>
 
       {ride.status === "requested" && (
-        <button onClick={handleCancel}>Cancel Ride</button>
+        <button
+          onClick={async () => {
+            try {
+              await cancelRide(ride._id);
+              alert("Ride cancelled");
+              navigate("/rides/myrides");
+            } catch {
+              alert("Failed to cancel ride");
+            }
+          }}
+        >
+          Cancel Ride
+        </button>
       )}
 
-      {ride.pickup && ride.dropoff && (
-        <MapContainer
-          center={[ride.pickup.lat, ride.pickup.lng]}
-          zoom={13}
-          style={{ height: "400px", width: "100%", marginTop: "20px" }}
-        >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <Marker position={[ride.pickup.lat, ride.pickup.lng]}>
+      <MapContainer
+        center={center}
+        zoom={13}
+        style={{ height: 400, width: "100%", marginTop: 16 }}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+        
+        {ride.pickup && (
+          <Marker position={[Number(ride.pickup.lat), Number(ride.pickup.lng)]}>
             <Popup>Pickup</Popup>
           </Marker>
-          <Marker position={[ride.dropoff.lat, ride.dropoff.lng]}>
+        )}
+        {ride.dropoff && (
+          <Marker position={[Number(ride.dropoff.lat), Number(ride.dropoff.lng)]}>
             <Popup>Dropoff</Popup>
           </Marker>
-          {routeCoords && <Polyline positions={routeCoords} color="blue" />}
-        </MapContainer>
-      )}
+        )}
+
+       
+        {custPath && <Polyline positions={custPath} />}            
+
+        
+        {showCar && drvPath?.length > 1 && (
+          <CarMarker path={drvPath} playing={playing} />
+        )}
+      </MapContainer>
     </div>
   );
-};
-
-export default RideDetails;
+}
