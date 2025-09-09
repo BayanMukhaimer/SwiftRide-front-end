@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { getRideById, cancelRide } from "../../../lib/api";
-
+import "./RideDetails.css"; 
 
 const RideDetails = () => {
   const { id } = useParams();
@@ -73,7 +73,7 @@ const RideDetails = () => {
         {ride.pickup && ride.dropoff && (
           <MapContainer
             center={[ride.pickup.lat, ride.pickup.lng]}
-            zoom={13}
+            zoom={12}
             className="ride-map"
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
