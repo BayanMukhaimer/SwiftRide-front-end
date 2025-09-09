@@ -8,6 +8,7 @@ import {
 } from "react-leaflet";
 import CarMarker from "./CarMarker";
 
+
 const DRIVER_START = { lat: 26.2285, lng: 50.586 };
 
 const DriverMap = ({ pickup, playing }) => {
@@ -37,7 +38,7 @@ const DriverMap = ({ pickup, playing }) => {
       <MapContainer
         center={[DRIVER_START.lat, DRIVER_START.lng]}
         zoom={13}
-        style={{ height: 250, marginTop: 8 }}
+        style={{ height: "400px", width: "100%", marginTop: "20px" }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {pickup && (

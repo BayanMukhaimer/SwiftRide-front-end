@@ -1,0 +1,75 @@
+.main {
+  margin-left: 220px;          
+  min-height: 100vh;
+  background: #1c1c1c;
+  padding: 24px 32px;           
+  box-sizing: border-box;
+  width: calc(100vw - 220px);   
+}
+
+.dashboard {
+  padding: 30px;
+  background: #1c1c1c;
+  color: #e5e5e5;
+  min-height: 100vh;
+}
+
+.dashboard__title {
+  margin-bottom: 2px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.subtle{
+    margin-top: 0px;
+}
+
+
+.card {
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+
+.rides {
+    width: 100%;     
+  display: grid;
+  gap: 20px;
+}
+
+
+.ride-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ride-info p {
+  margin: 4px 0;
+}
+
+
+.ride-actions button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #444;
+  color: #e5e5e5;
+  transition: background 0.2s;
+}
+
+.ride-actions button:hover {
+  background: #666;
+}
+
+
+.ride-map {
+  margin-top: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #3a3a3a;
+}
