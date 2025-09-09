@@ -123,19 +123,13 @@ console.log("drvPath points:", drvPath?.length, drvPath?.[0]);
             <Popup>Pickup</Popup>
           </Marker>
         )}
-        {ride.dropoff && (
-          <Marker position={[Number(ride.dropoff.lat), Number(ride.dropoff.lng)]}>
-            <Popup>Dropoff</Popup>
-          </Marker>
-        )}
-
-       
-        {custPath && <Polyline positions={custPath} />}            
-
-        
+      
+      
         {showCar && drvPath?.length > 1 && (
           <CarMarker path={drvPath} playing={playing} />
         )}
+
+        {drvPath && <Polyline positions={drvPath} />}
       </MapContainer>
     </div>
   );

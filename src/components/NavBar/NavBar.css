@@ -3,7 +3,7 @@ position: fixed;
   top: 0; left: 0;
   height: 100vh;
   width: 220px;
-  background: #111;
+  background: #000000;
   color: #f5f5f5;
   padding: 16px;
   padding-bottom: calc(16px + env(safe-area-inset-bottom)); 
@@ -17,13 +17,15 @@ position: fixed;
 }
 
 .main {
-  margin-left: 250px; 
-  margin-top: 30px;
+  margin-left: 200px; 
   padding: 16px;
   color: #f5f5f5;
   min-height: 100vh; 
 }
 
+.homepage {
+  margin-top: -24px;   /* cancels the .main padding */
+}
 
 .sidebar__brand {
   display: flex;
