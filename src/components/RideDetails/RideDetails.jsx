@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { getRideById, cancelRide } from "../../../lib/api";
-import RideCancelButton from "../HistoryRideList/RideCancelButton";
+
 
 const RideDetails = () => {
   const { id } = useParams();
@@ -18,7 +18,6 @@ const RideDetails = () => {
         const data = await getRideById(id);
         setRide(data);
 
-        // If pickup and dropoff exist, fetch route coordinates
         if (data.pickup && data.dropoff) {
           const url = `https://router.project-osrm.org/route/v1/driving/${data.pickup.lng},${data.pickup.lat};${data.dropoff.lng},${data.dropoff.lat}?overview=full&geometries=geojson`;
           const res = await fetch(url);
@@ -39,9 +38,6 @@ const RideDetails = () => {
     fetchRide();
   }, [id]);
 
-  if (loading) return <p>Loading ride details...</p>;
-  if (!ride) return <p>Ride not found</p>;
-
   const handleCancel = async () => {
     try {
       await cancelRide(ride._id);
@@ -53,35 +49,44 @@ const RideDetails = () => {
     }
   };
 
+  if (loading) return <p className="ride-details-loading">Loading ride details...</p>;
+  if (!ride) return <p className="ride-details-error">Ride not found</p>;
+
   return (
-    <div>
-      <h2>Ride Details</h2>
-      <p><strong>Status:</strong> {ride.status}</p>
-      <p><strong>Fare:</strong> {ride.fare ?? 0}</p>
-      <p><strong>Driver:</strong> {ride.driver?.name || "Unassigned"}</p>
-      <p><strong>Pickup:</strong> {ride.pickup.address}</p>
-      <p><strong>Dropoff:</strong> {ride.dropoff.address}</p>
+    <div className="ride-details-container">
+      {/* Left side - details */}
+      <div className="ride-details-info">
+        <h2>Ride Details</h2>
+        <p><strong>Status:</strong> {ride.status}</p>
+        <p><strong>Fare:</strong> {ride.fare ?? 0} BHD</p>
+        <p><strong>Driver:</strong> {ride.driver?.name || "Unassigned"}</p>
+        <p><strong>Pickup:</strong> {ride.pickup.address}</p>
+        <p><strong>Dropoff:</strong> {ride.dropoff.address}</p>
 
-      {ride.status === "requested" && (
-        <button onClick={handleCancel}>Cancel Ride</button>
-      )}
+        {ride.status === "requested" && (
+          <button onClick={handleCancel} className="cancel-btn">Cancel Ride</button>
+        )}
+      </div>
 
-      {ride.pickup && ride.dropoff && (
-        <MapContainer
-          center={[ride.pickup.lat, ride.pickup.lng]}
-          zoom={13}
-          style={{ height: "400px", width: "100%", marginTop: "20px" }}
-        >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <Marker position={[ride.pickup.lat, ride.pickup.lng]}>
-            <Popup>Pickup</Popup>
-          </Marker>
-          <Marker position={[ride.dropoff.lat, ride.dropoff.lng]}>
-            <Popup>Dropoff</Popup>
-          </Marker>
-          {routeCoords && <Polyline positions={routeCoords} color="blue" />}
-        </MapContainer>
-      )}
+      {/* Right side - map */}
+      <div className="ride-details-map">
+        {ride.pickup && ride.dropoff && (
+          <MapContainer
+            center={[ride.pickup.lat, ride.pickup.lng]}
+            zoom={13}
+            className="ride-map"
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <Marker position={[ride.pickup.lat, ride.pickup.lng]}>
+              <Popup>Pickup</Popup>
+            </Marker>
+            <Marker position={[ride.dropoff.lat, ride.dropoff.lng]}>
+              <Popup>Dropoff</Popup>
+            </Marker>
+            {routeCoords && <Polyline positions={routeCoords} color="blue" />}
+          </MapContainer>
+        )}
+      </div>
     </div>
   );
 };

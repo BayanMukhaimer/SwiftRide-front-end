@@ -59,13 +59,33 @@ const App = () => {
             }
           />
 
-          <Route path="/rides/request" element={<RideForm />} />
+          <Route
+            path="/rides/request"
+            element={
+              <RideForm />
+            }
+          />
 
-          <Route path="/rides/myrides" element={<HistoryRideList />} />
+          <Route
+            path="/rides/myrides"
+            element={
+              <HistoryRideList />
+            }
+          />
 
-          <Route path="/rides/:id" element={<RideDetails />} />
+          <Route
+            path="/rides/:id"
+            element={
+              <RideDetails />
+            }
+          />
 
-          <Route path="/driver" element={<DriverDashboard />} />
+          <Route
+            path="/driver"
+            element={
+              <DriverDashboard />
+            }
+          />
         </Routes>
       </main>
     </Router>
