@@ -11,6 +11,7 @@ import "leaflet/dist/leaflet.css";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
 import { createRide } from "../../../lib/api";
 import { useNavigate } from "react-router";
+import "./RideForm.css"; // import the CSS file
 
 const RideForm = ({ setFormIsShown }) => {
     const [pickup, setPickup] = useState({ address: "", lat: "", lng: "" });
@@ -23,7 +24,6 @@ const RideForm = ({ setFormIsShown }) => {
     const provider = new OpenStreetMapProvider();
     const navigate = useNavigate();
 
-    // Auto-set pickup to current location
     useEffect(() => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -48,7 +48,6 @@ const RideForm = ({ setFormIsShown }) => {
         }
     }, []);
 
-    // Map click to select pickup/dropoff
     const LocationSelector = () => {
         useMapEvents({
             click: async (e) => {
@@ -59,7 +58,6 @@ const RideForm = ({ setFormIsShown }) => {
                     setPickup({ address: results[0]?.label || `${lat},${lng}`, lat, lng });
                 } else if (!dropoff.lat && !dropoff.lng) {
                     setDropoff({ address: results[0]?.label || `${lat},${lng}`, lat, lng });
-
                     fetchRoute([pickup.lng, pickup.lat], [lng, lat]);
                 }
             },
@@ -160,79 +158,83 @@ const RideForm = ({ setFormIsShown }) => {
     };
 
     return (
-        <div>
-            <h2>Book Your Ride</h2>
+        <div className="ride-form-container">
+    {/* Left Form */}
+    <div className="ride-form-left">
+        <h2>Book Your Ride</h2>
+        <form onSubmit={handleSubmit}>
+            <label>Pickup</label>
+            <input
+                placeholder="Pickup address"
+                value={pickup.address}
+                onChange={(e) =>
+                    setPickup((prev) => ({ ...prev, address: e.target.value }))
+                }
+                required
+            />
 
-            <form onSubmit={handleSubmit}>
-                <strong>Pickup</strong>
-                <input
-                    placeholder="Pickup address"
-                    value={pickup.address}
-                    onChange={(e) =>
-                        setPickup((prev) => ({ ...prev, address: e.target.value }))
-                    }
-                    required
-                />
+            <label>Dropoff</label>
+            <input
+                placeholder="Dropoff address"
+                value={dropoff.address}
+                onChange={(e) =>
+                    setDropoff((prev) => ({ ...prev, address: e.target.value }))
+                }
+                required
+            />
 
-                <strong>Dropoff</strong>
-                <input
-                    placeholder="Dropoff address"
-                    value={dropoff.address}
-                    onChange={(e) =>
-                        setDropoff((prev) => ({ ...prev, address: e.target.value }))
-                    }
-                    required
-                />
-
-                
-                <strong>Choose Car Type</strong>
-                <select
-                    value={carType}
-                    onChange={(e) => setCarType(e.target.value)}
-                    required
-                >
-                    <option value="">-- Select Vehicle --</option>
-                    <option value="4-seater">4 Seater</option>
-                    <option value="6-seater">6 Seater</option>
-                </select>
-
-                <button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Submitting..." : "Request Ride"}
-                </button>
-                <button type="button" onClick={resetPoints} style={{ marginLeft: "10px" }}>
-                    Reset
-                </button>
-            </form>
-
-            {travelInfo && (
-                <p>
-                    🚗 Distance: {travelInfo.distanceKm} km | ⏱️ Time: {travelInfo.durationMin} mins <br />
-                    💰 4-Seater: {travelInfo.fares["4-seater"].toFixed(2)} BHD | 
-                    💰 6-Seater: {travelInfo.fares["6-seater"].toFixed(2)} BHD
-                </p>
-            )}
-
-            <MapContainer
-                center={[26.0667, 50.5577]} // Bahrain center
-                zoom={12}
-                style={{ height: "400px", width: "100%", marginTop: "20px" }}
+            <label>Choose Car Type</label>
+            <select
+                value={carType}
+                onChange={(e) => setCarType(e.target.value)}
+                required
             >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <LocationSelector />
+                <option value="">-- Select Vehicle --</option>
+                <option value="4-seater">4 Seater</option>
+                <option value="6-seater">6 Seater</option>
+            </select>
 
-                {pickup.lat && pickup.lng && (
-                    <Marker position={[pickup.lat, pickup.lng]}>
-                        <Popup>Pickup</Popup>
-                    </Marker>
-                )}
-                {dropoff.lat && dropoff.lng && (
-                    <Marker position={[dropoff.lat, dropoff.lng]}>
-                        <Popup>Dropoff</Popup>
-                    </Marker>
-                )}
-                {route && <Polyline positions={route} color="blue" />}
-            </MapContainer>
-        </div>
+            <button type="submit" disabled={isSubmitting} className="submit-btn">
+                {isSubmitting ? "Submitting..." : "Request Ride"}
+            </button>
+            <button type="button" onClick={resetPoints} className="reset-btn">
+                Reset
+            </button>
+        </form>
+
+        {travelInfo && (
+            <p>
+                🚗 Distance: {travelInfo.distanceKm} km | ⏱️ Time: {travelInfo.durationMin} mins <br />
+                💰 4-Seater: {travelInfo.fares["4-seater"].toFixed(2)} BHD | 
+                💰 6-Seater: {travelInfo.fares["6-seater"].toFixed(2)} BHD
+            </p>
+        )}
+    </div>
+
+    {/* Right Map */}
+    <div className="ride-form-right">
+        <MapContainer
+            center={[26.0667, 50.5577]}
+            zoom={12}
+            style={{ height: "100%", width: "100%" }}
+        >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <LocationSelector />
+
+            {pickup.lat && pickup.lng && (
+                <Marker position={[pickup.lat, pickup.lng]}>
+                    <Popup>Pickup</Popup>
+                </Marker>
+            )}
+            {dropoff.lat && dropoff.lng && (
+                <Marker position={[dropoff.lat, dropoff.lng]}>
+                    <Popup>Dropoff</Popup>
+                </Marker>
+            )}
+            {route && <Polyline positions={route} color="blue" />}
+        </MapContainer>
+    </div>
+</div>
     );
 };
 

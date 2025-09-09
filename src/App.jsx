@@ -11,6 +11,7 @@ import DriverDashboard from "./components/DriverDashboard/DriverDashboard";
 import NavBar from "./components/NavBar/NavBar";
 import RideDetails from "./components/RideDetails/RideDetails";
 
+
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [currentUser, setCurrentUser] = useState(null);
