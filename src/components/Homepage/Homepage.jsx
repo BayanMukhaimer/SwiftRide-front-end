@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { io } from "socket.io-client";
 import { Link } from "react-router";
 
+
 const socket = io("http://localhost:3000"); // match your backend URL
 
 const Homepage = () => {
