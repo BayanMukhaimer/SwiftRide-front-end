@@ -3,6 +3,8 @@ import { io } from "socket.io-client";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { authHeader } from "../../../lib/api";
+import DriverMap from "./DriverMap";
+import "./DriverDashboard.css";
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const SOCKET_URL = "http://localhost:3000";
@@ -29,13 +31,13 @@ const DriverDashboard = () => {
     const socket = io(SOCKET_URL);
     socketRef.current = socket;
 
-    socket.on("connect", () => {console.log("Driver socket connected:", socket.id);
+    socket.on("connect", () => {
+      console.log("Driver socket connected:", socket.id);
     });
 
     socket.emit("register", { userId: driverId, role: "driver" });
 
     socket.on("newRide", (ride) => {
-      
       if (ride && ride.status === "requested") {
         setRides((current) => [ride, ...current]);
       }
@@ -46,7 +48,7 @@ const DriverDashboard = () => {
 
   const handleAccept = async (ride) => {
     try {
-      console.log('header',authHeader())
+      console.log("header", authHeader());
       await axios.put(
         `${baseUrl}/rides/${ride._id}/accept`,
         {},
@@ -54,7 +56,7 @@ const DriverDashboard = () => {
       );
       socketRef.current.emit("accepted", {
         riderId: ride.rider,
-        driverId, 
+        driverId,
         rideId: ride._id,
       });
       const updated = rides.map((oneRide) => {
@@ -82,7 +84,7 @@ const DriverDashboard = () => {
         driverId,
         rideId: ride._id,
       });
-      
+
       const updated = rides.map((oneRide) => {
         if (oneRide._id === ride._id) {
           return { ...oneRide, status: "in-progress" };
@@ -130,41 +132,47 @@ const DriverDashboard = () => {
     }
     if (ride.status === "in-progress") {
       return <button onClick={() => handleComplete(ride)}>Complete</button>;
-    }
-    // if (ride.status === "completed") {
-    //   return (
-    //     <div>
-    //       <p>Ride started:{ride.startedAt} | Ride completed:{ride.completedAt}</p>
-    //     </div>
-    //   );
-    // }
-    else
-      return
+    } else return;
   }
 
   return (
-    <div>
-      <h2>Driver Dashboard</h2>
+    <div className="dashboard">
+      <h2 className="dashboard__title">Driver Dashboard</h2>
+      <h3 className="subtle">Live updates & current rides</h3>
       {rides.length === 0 ? (
-        <p>No incoming rides…</p>
+        <p className="card">No incoming rides…</p>
       ) : (
-        rides.map((ride) => (
-          <div key={ride._id}>
-            <div>
-              <b>Ride state: </b>{ride.status}
+        <div className="rides">
+          {rides.map((ride) => (
+            <div key={ride._id}>
+              <div className="ride-info">
+                <p>
+                  <b>Ride state: </b>
+                  {ride.status}
+                </p>
+                <p>
+                  <b>Pickup:</b> {ride.pickup.address}
+                </p>
+                <p>
+                  <b>Dropoff:</b> {ride.dropoff.address}
+                </p>
+                <p>
+                  <b>Fare:</b> {ride.fare ?? 0}
+                </p>
+              </div>
+
+              <div className="ride-actions">
+                <RideActions ride={ride} />
+              </div>
+              <div className="ride-map">
+                <DriverMap
+                  pickup={ride.pickup}
+                  playing={ride.status === "in-progress"}
+                />
+              </div>
             </div>
-            <div>
-              <b>Pickup:</b> {ride.pickup.address}
-            </div>
-            <div>
-              <b>Dropoff:</b> {ride.dropoff.address}
-            </div>
-            <div>
-              <b>Fare:</b> {ride.fare ?? 0}
-            </div>
-            <RideActions ride={ride} />
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );

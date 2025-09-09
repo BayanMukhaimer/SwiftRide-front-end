@@ -20,7 +20,7 @@ const App = () => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        console.log('decoded',decoded)
+        console.log("decoded", decoded);
         setCurrentUser(decoded);
       } catch (err) {
         console.error("Invalid token:", err);
@@ -43,59 +43,31 @@ const App = () => {
   return (
     <Router>
       <NavBar currentUser={currentUser} onLogout={handleLogout} />
+      <main className="main">
+        <Routes>
+          <Route path="/" element={<Homepage />} />
 
-      <Routes>
+          <Route path="/signup" element={<RegisterForm />} />
 
-        <Route
-          path="/"
-          element={
-            <Homepage />
-          }
-        />
+          <Route
+            path="/login"
+            element={
+              <LoginForm
+                onLogin={handleLogin}
+                setCurrentUser={setCurrentUser}
+              />
+            }
+          />
 
-        <Route
-          path="/signup"
-          element={
-            <RegisterForm />
-          }
-        />
+          <Route path="/rides/request" element={<RideForm />} />
 
-        <Route
-          path="/login"
-          element={
-            <LoginForm onLogin={handleLogin} setCurrentUser={setCurrentUser}/>
-          }
-        />
+          <Route path="/rides/myrides" element={<HistoryRideList />} />
 
-        <Route
-          path="/rides/request"
-          element={
-            <RideForm />
-          }
-        />
+          <Route path="/rides/:id" element={<RideDetails />} />
 
-        <Route
-          path="/rides/myrides"
-          element={
-            <HistoryRideList />
-          }
-        />
-
-        <Route
-          path="/rides/:id"
-          element={
-            <RideDetails />
-          }
-        />
-
-        <Route
-          path="/driver"
-          element={
-            <DriverDashboard />
-          }
-        />
-
-      </Routes>
+          <Route path="/driver" element={<DriverDashboard />} />
+        </Routes>
+      </main>
     </Router>
   );
 };
