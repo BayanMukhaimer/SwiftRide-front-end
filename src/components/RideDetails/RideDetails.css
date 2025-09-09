@@ -1,0 +1,50 @@
+.ride-details-container {
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 30px); 
+  gap: 20px;
+  box-sizing: border-box;
+  padding: 10px;
+  background: #121212;
+  color: #e0e0e0;
+}
+
+
+.ride-details-info {
+  flex: 1;
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  overflow-y: auto;
+}
+
+
+.ride-details-map {
+  flex: 2;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+}
+
+.ride-details-map .leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+
+.cancel-btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 14px;
+  background: #e53935;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+.cancel-btn:hover {
+  background: #c62828;
+}
