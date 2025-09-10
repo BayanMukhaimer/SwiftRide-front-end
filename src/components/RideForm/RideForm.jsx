@@ -136,8 +136,8 @@ const RideForm = ({ setFormIsShown }) => {
   };
   const calculateFare = (distanceKm, durationMin, type) => {
     const pricing = {
-      "4-seater": { base: 2, perKm: 0.5, perMin: 0.2 },
-      "6-seater": { base: 3, perKm: 0.8, perMin: 0.3 },
+      "4-seater": { base: 1, perKm: 0.5, perMin: 0.2 },
+      "6-seater": { base: 2, perKm: 0.8, perMin: 0.3 },
     };
     const rates = pricing[type];
     return rates.base + distanceKm * rates.perKm + durationMin * rates.perMin;

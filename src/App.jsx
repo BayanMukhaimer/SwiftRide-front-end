@@ -55,6 +55,7 @@ const App = () => {
               <LoginForm
                 onLogin={handleLogin}
                 setCurrentUser={setCurrentUser}
+                currentUser={currentUser}
               />
             }
           />

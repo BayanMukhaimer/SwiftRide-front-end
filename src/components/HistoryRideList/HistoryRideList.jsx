@@ -9,6 +9,14 @@ const HistoryRideList = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const statusColors = {
+    requested: "dodgerblue",
+    accepted: "mediumseagreen",
+    "in-progress": "orange",
+    completed: "gray",
+    cancelled: "crimson",
+  };
+
   const getAllRide = async () => {
     try {
       const response = await fetchRides();
@@ -19,16 +27,15 @@ const HistoryRideList = () => {
     }
   };
 
-  
   useEffect(() => {
     (async () => {
       await getAllRide();
       setLoading(false);
     })();
   }, []);
-  
+
   if (loading) return <ClipLoader />;
-  
+
   return (
     <div>
       <h2>My Rides</h2>
@@ -37,7 +44,10 @@ const HistoryRideList = () => {
           <li key={ride._id} style={{ marginBottom: "20px" }}>
             <Link to={`/rides/${ride._id}`}>
               <p>
-                <strong>Status:</strong> {ride.status}
+                <strong>Status:</strong>
+                <span style={{ color: statusColors[ride.status] }}>
+                  {ride.status}
+                </span>
               </p>
               <p>
                 <strong>Fare:</strong> {ride.fare ?? 0}
