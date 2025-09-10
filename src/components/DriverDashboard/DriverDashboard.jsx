@@ -9,6 +9,13 @@ import "./DriverDashboard.css";
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const SOCKET_URL = "http://localhost:3000";
 
+const statusColors = {
+  requested: "dodgerblue",
+  accepted: "mediumseagreen",
+  "in-progress": "orange",
+  completed: "gray",
+  cancelled: "crimson",
+};
 const DriverDashboard = () => {
   const socketRef = useRef(null);
   const [rides, setRides] = useState([]);
@@ -148,7 +155,9 @@ const DriverDashboard = () => {
               <div className="ride-info">
                 <p>
                   <b>Ride state: </b>
-                  {ride.status}
+                  <span style={{ color: statusColors[ride.status] }}>
+                    {ride.status}
+                  </span>
                 </p>
                 <p>
                   <b>Pickup:</b> {ride.pickup.address}

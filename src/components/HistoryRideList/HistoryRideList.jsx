@@ -9,6 +9,14 @@ const HistoryRideList = () => {
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const statusColors = {
+    requested: "dodgerblue",
+    accepted: "mediumseagreen",
+    "in-progress": "orange",
+    completed: "gray",
+    cancelled: "crimson",
+  };
+
   const getAllRide = async () => {
     try {
       const response = await fetchRides();
@@ -38,7 +46,11 @@ const HistoryRideList = () => {
           {rides.map((ride) => (
             <li key={ride._id} className="history-item">
               <Link to={`/rides/${ride._id}`} className="history-link">
-                <p><strong>Status:</strong> {ride.status}</p>
+                <p><strong>Status:</strong> 
+                <span style={{ color: statusColors[ride.status] }}>
+                  {ride.status}
+                </span>
+                </p>
                 {/* <p><strong>Fare:</strong> {ride.fare ?? 0} BHD</p> */}
                 <p><strong>Pickup:</strong> {ride.pickup.address}</p>
                 <p><strong>Dropoff:</strong> {ride.dropoff.address}</p>
@@ -52,6 +64,7 @@ const HistoryRideList = () => {
           ))}
         </ul>
       )}
+
     </div>
   );
 };

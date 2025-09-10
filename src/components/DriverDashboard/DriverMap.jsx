@@ -14,6 +14,7 @@ const DRIVER_START = { lat: 26.2285, lng: 50.586 };
 const DriverMap = ({ pickup, playing }) => {
   const [driverRoute, setDriverRoute] = useState(null);
 
+  
   useEffect(() => {
     if (!pickup?.lat) return;
     const fetchRoute = async () => {
@@ -24,7 +25,6 @@ const DriverMap = ({ pickup, playing }) => {
         data.routes?.[0]?.geometry?.coordinates?.map(([x, y]) => [y, x]) || [];
       setDriverRoute(coords);
 
-      c
     };
     fetchRoute();
   }, [pickup]);
