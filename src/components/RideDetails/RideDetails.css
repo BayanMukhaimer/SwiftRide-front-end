@@ -1,50 +1,62 @@
 .ride-details-container {
   display: flex;
-  width: 100%;
-  height: calc(100vh - 30px); 
-  gap: 20px;
-  box-sizing: border-box;
-  padding: 10px;
-  background: #121212;
-  color: #e0e0e0;
+  flex-direction: row;
+  height: 90vh; 
+  margin: 20px; 
+  border-radius: 16px; 
+  overflow: hidden; 
+  background-color: #1e1e1e;
+  color: #f5f5f5;
+  font-family: 'Arial', sans-serif;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4); 
 }
 
 
-.ride-details-info {
+.ride-details-left {
   flex: 1;
-  background: #1e1e1e;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  max-width: 400px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: #2a2a2a; 
   overflow-y: auto;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
 }
 
 
-.ride-details-map {
+.ride-details-right {
   flex: 2;
-  border-radius: 8px;
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+  background-color: #1e1e1e; 
+}
+
+.ride-map {
+  height: 100%;
+  width: 100%;
+  border-radius: 16px;
   overflow: hidden;
-  background: #000;
-}
-
-.ride-details-map .leaflet-container {
-  width: 100% !important;
-  height: 100% !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 
-.cancel-btn {
-  display: inline-block;
-  margin-top: 20px;
-  padding: 10px 14px;
-  background: #e53935;
-  color: #fff;
+.ride-details-left button {
+  background-color: #b92f1d;
   border: none;
+  padding: 10px 16px;
+  color: #fff;
+  font-weight: bold;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: bold;
-  transition: background 0.3s;
+  transition: background 0.2s ease;
+  width: fit-content;
 }
-.cancel-btn:hover {
-  background: #c62828;
+
+.ride-details-left button:hover {
+  background-color: #830e0e;
 }

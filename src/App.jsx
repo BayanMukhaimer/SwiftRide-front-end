@@ -2,7 +2,7 @@ import { jwtDecode } from "jwt-decode";
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 
-import Homepage from "./components/Homepage/Homepage";
+// import Homepage from "./components/Homepage/Homepage";
 import RegisterForm from "./components/RegisterForm/RegisterForm";
 import LoginForm from "./components/LoginForm/LoginForm";
 import RideForm from "./components/RideForm/RideForm";
@@ -45,7 +45,7 @@ const App = () => {
       <NavBar currentUser={currentUser} onLogout={handleLogout} />
       <main className="main">
         <Routes>
-          <Route path="/" element={<Homepage />} />
+          {/* <Route path="/" element={<Homepage />} /> */}
 
           <Route path="/signup" element={<RegisterForm />} />
 
