@@ -51,7 +51,7 @@ const HistoryRideList = () => {
                   {ride.status}
                 </span>
                 </p>
-                {/* <p><strong>Fare:</strong> {ride.fare ?? 0} BHD</p> */}
+                
                 <p><strong>Pickup:</strong> {ride.pickup.address}</p>
                 <p><strong>Dropoff:</strong> {ride.dropoff.address}</p>
               </Link>

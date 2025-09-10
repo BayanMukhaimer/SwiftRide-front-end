@@ -115,7 +115,7 @@ export default function RideDetails() {
           </span>
         </p>
         <p>
-          <strong>Fare:</strong> {ride.fare ?? 0} BHD
+          <strong>Fare:</strong> {ride.fare.toFixed(2) ?? 0} BHD
         </p>
         <p>
           <strong>Driver:</strong> {ride.driver?.name || "Unassigned"}
