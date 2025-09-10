@@ -11,6 +11,10 @@ Users can **book a ride, choose pickup and dropoff points, estimate fares, and t
 The application ensures smooth interaction between **customers and drivers**, backed by a modern **full-stack architecture**.
 
 ---
+<img width="1829" height="988" alt="image" src="https://github.com/user-attachments/assets/71ecf51f-430d-481f-9f03-51ce0c975dac" />
+<img width="1880" height="1006" alt="image" src="https://github.com/user-attachments/assets/da69a431-31e2-4e76-bddc-aecc93554baf" />
+
+
 
 ## Contents
 1. **Introduction** – Overview of the project  
