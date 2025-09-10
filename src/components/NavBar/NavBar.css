@@ -24,7 +24,7 @@ position: fixed;
 }
 
 .homepage {
-  margin-top: -24px;   /* cancels the .main padding */
+  margin-top: -24px;  
 }
 
 .sidebar__brand {
@@ -81,7 +81,6 @@ position: fixed;
 .sidebar__logout {
    position: sticky;
   bottom: 0;                     
-  background: #111;           
   padding-top: 12px;
   padding-bottom: 12px;
   border-top: 1px solid #262626;
@@ -89,7 +88,7 @@ position: fixed;
 }
 
 .sidebar__logout button {
-  width: 100%;
+  width: 90%;
   display: block;
   min-height: 40px;             
 }

@@ -11,6 +11,7 @@ import "leaflet/dist/leaflet.css";
 
 import { getRideById, cancelRide } from "../../../lib/api";
 import CarMarker from "../DriverDashboard/CarMarker";
+import "./RideDetails.css"; 
 
 export default function RideDetails() {
   const statusColors = {
@@ -103,71 +104,75 @@ export default function RideDetails() {
   const showCar = ride.status === "accepted" || ride.status === "in-progress";
   const playing = ride.status === "in-progress";
 
-  
   return (
-    <div>
-      <h2>Ride Details</h2>
-      <p>
-        <strong>Status:</strong>
-        <span style={{ color: statusColors[ride.status] }}>{ride.status}</span>
-      </p>
-      <p>
-        <strong>Fare:</strong> {ride.fare ?? 0} BHD
-      </p>
-      <p>
-        <strong>Driver:</strong> {ride.driver?.name || "Unassigned"}
-      </p>
-      <p>
-        <strong>Pickup:</strong> {ride.pickup?.address}
-      </p>
-      <p>
-        <strong>Dropoff:</strong> {ride.dropoff?.address}
-      </p>
+    <div className="ride-details-container">
+      <div className="ride-details-left">
+        <h2>Ride Details</h2>
+        <p>
+          <strong>Status:</strong>{" "}
+          <span style={{ color: statusColors[ride.status] }}>
+            {ride.status}
+          </span>
+        </p>
+        <p>
+          <strong>Fare:</strong> {ride.fare ?? 0} BHD
+        </p>
+        <p>
+          <strong>Driver:</strong> {ride.driver?.name || "Unassigned"}
+        </p>
+        <p>
+          <strong>Pickup:</strong> {ride.pickup?.address}
+        </p>
+        <p>
+          <strong>Dropoff:</strong> {ride.dropoff?.address}
+        </p>
 
-      {ride.status === "requested" && (
-        <button
-          onClick={async () => {
-            try {
-              await cancelRide(ride._id);
-              alert("Ride cancelled");
-              navigate("/rides/myrides");
-            } catch {
-              alert("Failed to cancel ride");
-            }
-          }}
-        >
-          Cancel Ride
-        </button>
-      )}
-
-      <MapContainer
-        center={center}
-        zoom={13}
-        style={{ height: 400, width: "100%", marginTop: 16 }}
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-        {ride.pickup && (
-          <Marker position={[Number(ride.pickup.lat), Number(ride.pickup.lng)]}>
-            <Popup>Pickup</Popup>
-          </Marker>
+        {ride.status === "requested" && (
+          <button
+            onClick={async () => {
+              try {
+                await cancelRide(ride._id);
+                alert("Ride cancelled");
+                navigate("/rides/myrides");
+              } catch {
+                alert("Failed to cancel ride");
+              }
+            }}
+          >
+            Cancel Ride
+          </button>
         )}
-        
-        {ride.dropoff && (
+      </div>
+
+      
+      <div className="ride-details-right">
+        <MapContainer
+          center={center}
+          zoom={13}
+          className="ride-map"
+        >
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+          {ride.pickup && (
+            <Marker position={[Number(ride.pickup.lat), Number(ride.pickup.lng)]}>
+              <Popup>Pickup</Popup>
+            </Marker>
+          )}
+
+          {ride.dropoff && (
             <Marker position={[Number(ride.dropoff.lat), Number(ride.dropoff.lng)]}>
               <Popup>Dropoff</Popup>
             </Marker>
           )}
 
+          {showCar && drvPath?.length > 1 && (
+            <CarMarker path={drvPath} playing={playing} />
+          )}
 
-        {showCar && drvPath?.length > 1 && (
-          <CarMarker path={drvPath} playing={playing} />
-        )}
-
-        {custPath && <Polyline positions={custPath} />}
-
-        {drvPath && <Polyline positions={drvPath} />}
-      </MapContainer>
+          {custPath && <Polyline positions={custPath} />}
+          {drvPath && <Polyline positions={drvPath} />}
+        </MapContainer>
+      </div>
     </div>
   );
 }
