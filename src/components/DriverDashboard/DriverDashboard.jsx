@@ -153,7 +153,7 @@ const DriverDashboard = () => {
           {rides.map((ride) => (
             <div key={ride._id} className="ride-info">
               <p>
-                <b>Ride state: </b>
+                <b>Ride Status: </b>
                 <span style={{ color: statusColors[ride.status] }}>
                   {ride.status}
                 </span>
