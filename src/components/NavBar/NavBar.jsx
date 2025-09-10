@@ -15,8 +15,8 @@ const NavBar = ({ onLogout, currentUser }) => {
     <aside className="sidebar">
       <div className="sidebar__brand">
         <Link to="/" className="sidebar__brand-link"></Link>
-        {/* <img src="../../../images/Logo.png" alt="Logo"/> */}
-        <span className="sidebar__name">RideApp</span>
+        
+        <span className="sidebar__image"><img src="../../../logo.png" alt="Logo"/></span>
       </div>
 
       <ul className="menu">

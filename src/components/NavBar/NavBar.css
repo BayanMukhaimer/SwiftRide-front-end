@@ -33,6 +33,11 @@ position: fixed;
   gap: 8px;
   margin-bottom: 20px;
 }
+
+.sidebar__image img{
+width: auto;
+height: 50px;
+}
 .sidebar__brand-link {
   display: flex;
   align-items: center;
@@ -46,10 +51,10 @@ position: fixed;
   height: 32px;
 }
 
-.sidebar__name {
+/* .sidebar__name {
   color: #fff;
   font-weight: bold;
-}
+} */
 
 
 .menu {
