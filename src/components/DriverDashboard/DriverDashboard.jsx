@@ -145,34 +145,27 @@ const DriverDashboard = () => {
   return (
     <div className="dashboard">
       <h2 className="dashboard__title">Driver Dashboard</h2>
-      <h3 className="subtle">Live updates & current rides</h3>
+      <h3 className="subtle"><b>Live updates & current rides</b></h3>
       {rides.length === 0 ? (
         <p className="card">No incoming rides…</p>
       ) : (
         <div className="rides">
           {rides.map((ride) => (
-            <div key={ride._id}>
-              <div className="ride-info">
-                <p>
-                  <b>Ride state: </b>
-                  <span style={{ color: statusColors[ride.status] }}>
-                    {ride.status}
-                  </span>
-                </p>
-                <p>
-                  <b>Pickup:</b> {ride.pickup.address}
-                </p>
-                <p>
-                  <b>Dropoff:</b> {ride.dropoff.address}
-                </p>
-                <p>
-                  <b>Fare:</b> {ride.fare ?? 0}
-                </p>
-              </div>
+            <div key={ride._id} className="ride-info">
+              <p>
+                <b>Ride state: </b>
+                <span style={{ color: statusColors[ride.status] }}>
+                  {ride.status}
+                </span>
+              </p>
+              <p><b>Pickup:</b> {ride.pickup.address}</p>
+              <p><b>Dropoff:</b> {ride.dropoff.address}</p>
+              <p><b>Fare:</b> {ride.fare.toFixed(2) ?? 0}</p>
 
               <div className="ride-actions">
                 <RideActions ride={ride} />
               </div>
+
               <div className="ride-map">
                 <DriverMap
                   pickup={ride.pickup}

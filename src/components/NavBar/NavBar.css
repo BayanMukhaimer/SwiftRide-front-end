@@ -17,9 +17,9 @@ position: fixed;
 }
 
 .main {
-  margin-left: 200px; 
+  margin-left: 220px; 
   padding: 16px;
-  color: #f5f5f5;
+  color: #000000;
   min-height: 100vh; 
 }
 
