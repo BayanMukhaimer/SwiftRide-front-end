@@ -49,8 +49,7 @@ The application ensures smooth interaction between **customers and drivers**, ba
 ##  Future Enhancements
 
 While SwiftRide already provides core ride-hailing functionality, future versions could include:
-
--  **Mobile Application** – Develop Android/iOS apps using React Native for wider accessibility.    
+ 
 -  **Payment Integration** – Secure in-app payments with Stripe or PayPal.  
 -  **Rating & Reviews** – Allow passengers and drivers to rate each other.  
 -  **AI-Powered Route Optimization** – Suggest the fastest/cheapest routes using ML.  
