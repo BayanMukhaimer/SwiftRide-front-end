@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import axios from "axios";
+import "./RegisterForm.css"
 
 function SignUp() {
   const [name, setName] = useState("");
